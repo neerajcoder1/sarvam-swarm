@@ -337,7 +337,7 @@ Each AI component can evolve independently without affecting the remaining pipel
 # Project Structure
 
 ```
-VisionX-SwarmAssist/
+SwarmAssist/
 
 │
 ├── frontend/
@@ -568,7 +568,7 @@ Expected improvements:
 | Name | Role |
 |------|------|
 | Team Seedhe Code | Full-Stack AI Development |
-| Smart Campus Hackathon 2026 | Project Submission |
+|  Hackathon 2026 | Project Submission |
 
 ---
 
