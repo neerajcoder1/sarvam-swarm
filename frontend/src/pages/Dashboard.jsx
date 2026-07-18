@@ -5,7 +5,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import SwarmAgentCard from '../components/SwarmAgentCard'
 import AgentTracePanel from '../components/AgentTracePanel'
 import DayPlanOutput from '../components/DayPlanOutput'
-import { SWARM_AGENTS } from '../data/agents'
+import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
 const QUICK_SUGGESTIONS = [
   "Plan my day",
   "What's my schedule today?",
@@ -24,6 +24,10 @@ export default function Dashboard() {
   const [completedAgents, setCompletedAgents] = useState(new Set())
   const [selectedAgentId, setSelectedAgentId] = useState(null)
   const [speechActive, setSpeechActive] = useState(false)
+  
+  const [agentsData, setAgentsData] = useState(SWARM_AGENTS)
+  const [tasksData, setTasksData] = useState(DAY_PLAN_TASKS)
+  const [voiceNarrationData, setVoiceNarrationData] = useState(VOICE_NARRATION)
 
   const recognitionRef = useRef(null)
   const bottomRef = useRef(null)
@@ -119,8 +123,8 @@ export default function Dashboard() {
     }
   }
 
-  // Trigger Swarm flow
-  const handleStartSwarm = (queryText = input) => {
+  // Trigger Swarm flow with FastAPI integration
+  const handleStartSwarm = async (queryText = input) => {
     if (!queryText.trim()) return
     
     // First transition to loading view
@@ -128,7 +132,40 @@ export default function Dashboard() {
     setSwarmPhase('idle')
     clearTimers()
 
-    // Loading overlay time: 2.5 seconds
+    let activeData = {
+      agents: SWARM_AGENTS,
+      tasks: DAY_PLAN_TASKS,
+      voice_narration: VOICE_NARRATION
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/swarm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: queryText }),
+      })
+
+      if (response.ok) {
+        const parsed = await response.json()
+        if (parsed && parsed.agents && parsed.tasks) {
+          activeData = parsed
+          console.log("Successfully retrieved data from FastAPI:", parsed)
+        }
+      } else {
+        console.warn("Backend returned error status, using default mock data.")
+      }
+    } catch (err) {
+      console.error("Failed to fetch from backend, using default mock data:", err)
+    }
+
+    // Set updated data in state
+    setAgentsData(activeData.agents)
+    setTasksData(activeData.tasks)
+    setVoiceNarrationData(activeData.voice_narration)
+
+    // Staggered sequential simulation using loaded agent list
     const startTimer = setTimeout(() => {
       setView('dashboard')
       setSwarmPhase('running')
@@ -137,8 +174,8 @@ export default function Dashboard() {
       setCompletedAgents(new Set())
       setSelectedAgentId(null)
 
-      // Sequence execution: 1.5 seconds delay between each agent card
-      SWARM_AGENTS.forEach((agent, index) => {
+      // Sequential staggered execution (1.2 seconds delay per agent card)
+      activeData.agents.forEach((agent, index) => {
         const appearTimer = setTimeout(() => {
           setVisibleCount(index + 1)
           setActiveAgentIndex(index)
@@ -150,28 +187,27 @@ export default function Dashboard() {
               return next
             })
 
-            if (index === SWARM_AGENTS.length - 1) {
+            if (index === activeData.agents.length - 1) {
               setActiveAgentIndex(-1)
               setSwarmPhase('complete')
-              // Automatically play voice narration on completion
-              triggerVoiceSpeech()
+              // Automatically play the customized Hinglish voice narration
+              triggerVoiceSpeech(activeData.voice_narration)
             } else {
               setActiveAgentIndex(index + 1)
             }
-          }, 1300) // complete slightly before next agent starts
+          }, 1000) // complete slightly before next agent starts
 
           timersRef.current.push(completeTimer)
-        }, index * 1500)
+        }, index * 1200)
 
         timersRef.current.push(appearTimer)
       })
-    }, 2500)
+    }, 1500) // Transition loading -> dashboard in 1.5 seconds
 
     timersRef.current.push(startTimer)
   }
 
-  const triggerVoiceSpeech = () => {
-    const textToSpeak = "Priya, aaj ka plan ready hai! Subah energy boost se start, dopahar presentation ke liye prep aur snack, shaam ko groceries aur maa ko call — sab time pe set hai. Tum bas follow karo, swarm handle karega!"
+  const triggerVoiceSpeech = (textToSpeak = voiceNarrationData) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
       const utterance = new SpeechSynthesisUtterance(textToSpeak)
@@ -203,7 +239,7 @@ export default function Dashboard() {
     setInput('')
   }
 
-  const activeAgent = SWARM_AGENTS.find((a) => a.id === selectedAgentId)
+  const activeAgent = agentsData.find((a) => a.id === selectedAgentId)
 
   return (
     <div className="app-container">
@@ -347,7 +383,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="agents-cards-grid mt-6">
-                  {SWARM_AGENTS.map((agent, index) => {
+                  {agentsData.map((agent, index) => {
                     const isVisible = index < visibleCount
                     const isActive = index === activeAgentIndex && swarmPhase === 'running'
                     const isComplete = completedAgents.has(agent.id)
@@ -377,8 +413,10 @@ export default function Dashboard() {
                   >
                     <DayPlanOutput
                       speechActive={speechActive}
-                      onPlay={triggerVoiceSpeech}
+                      onPlay={() => triggerVoiceSpeech(voiceNarrationData)}
                       onStop={stopVoiceSpeech}
+                      tasks={tasksData}
+                      voiceNarration={voiceNarrationData}
                     />
                     <div ref={bottomRef} />
                   </motion.div>

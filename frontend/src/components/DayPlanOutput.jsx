@@ -22,7 +22,7 @@ const taskItemVariants = {
   }
 }
 
-export default function DayPlanOutput({ speechActive, onPlay, onStop }) {
+export default function DayPlanOutput({ speechActive, onPlay, onStop, tasks = DAY_PLAN_TASKS, voiceNarration = VOICE_NARRATION }) {
   return (
     <div className="day-plan-card glass-panel pulse-glow">
       <div className="day-plan-header">
@@ -39,7 +39,7 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop }) {
         initial="hidden"
         animate="show"
       >
-        {DAY_PLAN_TASKS.map((task) => (
+        {tasks.map((task) => (
           <motion.div
             key={task.time}
             className="task-item"
@@ -72,7 +72,7 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop }) {
 
         <div className="voice-preview-box">
           <p className="voice-text">
-            &ldquo;{VOICE_NARRATION}&rdquo;
+            &ldquo;{voiceNarration}&rdquo;
           </p>
         </div>
       </div>
