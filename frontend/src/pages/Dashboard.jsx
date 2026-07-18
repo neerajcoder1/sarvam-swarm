@@ -112,41 +112,52 @@ export default function Dashboard() {
   // Trigger Swarm flow
   const handleStartSwarm = (queryText = input) => {
     if (!queryText.trim()) return
-    setView('dashboard')
-    setSwarmPhase('running')
-    setVisibleCount(0)
-    setActiveAgentIndex(-1)
-    setCompletedAgents(new Set())
-    setSelectedAgentId(null)
+    
+    // First transition to loading view
+    setView('loading')
+    setSwarmPhase('idle')
+    clearTimers()
 
-    // Sequence execution: 1.5 seconds delay between each agent card
-    SWARM_AGENTS.forEach((agent, index) => {
-      const appearTimer = setTimeout(() => {
-        setVisibleCount(index + 1)
-        setActiveAgentIndex(index)
+    // Loading overlay time: 2.5 seconds
+    const startTimer = setTimeout(() => {
+      setView('dashboard')
+      setSwarmPhase('running')
+      setVisibleCount(0)
+      setActiveAgentIndex(-1)
+      setCompletedAgents(new Set())
+      setSelectedAgentId(null)
 
-        const completeTimer = setTimeout(() => {
-          setCompletedAgents((prev) => {
-            const next = new Set(prev)
-            next.add(agent.id)
-            return next
-          })
+      // Sequence execution: 1.5 seconds delay between each agent card
+      SWARM_AGENTS.forEach((agent, index) => {
+        const appearTimer = setTimeout(() => {
+          setVisibleCount(index + 1)
+          setActiveAgentIndex(index)
 
-          if (index === SWARM_AGENTS.length - 1) {
-            setActiveAgentIndex(-1)
-            setSwarmPhase('complete')
-            // Automatically play voice narration on completion
-            triggerVoiceSpeech()
-          } else {
-            setActiveAgentIndex(index + 1)
-          }
-        }, 1300) // complete slightly before next agent starts
+          const completeTimer = setTimeout(() => {
+            setCompletedAgents((prev) => {
+              const next = new Set(prev)
+              next.add(agent.id)
+              return next
+            })
 
-        timersRef.current.push(completeTimer)
-      }, index * 1500)
+            if (index === SWARM_AGENTS.length - 1) {
+              setActiveAgentIndex(-1)
+              setSwarmPhase('complete')
+              // Automatically play voice narration on completion
+              triggerVoiceSpeech()
+            } else {
+              setActiveAgentIndex(index + 1)
+            }
+          }, 1300) // complete slightly before next agent starts
 
-      timersRef.current.push(appearTimer)
-    })
+          timersRef.current.push(completeTimer)
+        }, index * 1500)
+
+        timersRef.current.push(appearTimer)
+      })
+    }, 2500)
+
+    timersRef.current.push(startTimer)
   }
 
   const triggerVoiceSpeech = () => {
@@ -213,7 +224,7 @@ export default function Dashboard() {
             >
               {/* Quick Suggestions Bar */}
               <div className="suggestions-container">
-                <span className="suggestions-title">Quick Suggestions</span>
+                <span className="suggestions-title">Try these commands</span>
                 <div className="suggestions-list">
                   {QUICK_SUGGESTIONS.map((suggestion) => (
                     <button
@@ -242,13 +253,17 @@ export default function Dashboard() {
                   disabled={isListening}
                 />
                 
+                {isListening && (
+                  <span className="voice-status-label animate-pulse">Voice Input</span>
+                )}
+
                 <button
                   type="button"
                   className={`mic-button-glow ${isListening ? 'recording' : ''}`}
                   onClick={toggleListening}
                   title={isListening ? 'Listening...' : 'Voice Input'}
                 >
-                  <Mic size={20} />
+                  <Mic size={22} />
                 </button>
 
                 {input.trim() && (
@@ -263,6 +278,26 @@ export default function Dashboard() {
                 )}
               </div>
             </motion.div>
+          </motion.div>
+        ) : view === 'loading' ? (
+          <motion.div
+            key="loading-view"
+            className="loading-overlay-container"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="loading-center-content">
+              <div className="premium-loader-rings">
+                <div className="loader-ring loader-ring-outer" />
+                <div className="loader-ring loader-ring-inner" />
+                <Brain className="loader-icon-center text-indigo-400" size={24} />
+              </div>
+              <div className="typing-text-wrapper">
+                <p className="typing-text">Swarm is planning your day...</p>
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div
