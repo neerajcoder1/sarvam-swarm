@@ -882,35 +882,37 @@ html.light .glow-orb {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 1.1rem;
-  border-radius: 12px;
-  background: var(--accent);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.6rem;
+  width: 62%;
+  height: 46px;
+  margin: 0 auto;
+  border-radius: 23px;
+  background: linear-gradient(90deg, #4F46E5, #6366F1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.6);
+  box-sizing: border-box;
 }
 
 .speak-plan-btn:hover {
-  background: var(--accent-soft);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.7);
 }
 
 .speak-plan-btn:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .speak-plan-btn.active {
-  background: #EF4444;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(90deg, #EF4444, #F87171);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .speak-status-dot {

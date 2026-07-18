@@ -65,7 +65,7 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop }) {
           className={`speak-plan-btn ${speechActive ? 'active' : ''}`}
           onClick={speechActive ? onStop : onPlay}
         >
-          <Volume2 size={18} />
+          <Volume2 size={16} color="rgba(255, 255, 255, 0.85)" />
           <span>{speechActive ? 'Stop Speaking' : 'Speak Plan'}</span>
           {speechActive && <span className="speak-status-dot" />}
         </button>
