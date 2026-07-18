@@ -58,40 +58,23 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop }) {
         ))}
       </motion.div>
 
-      {/* Voice preview narrating section */}
-      <div className="voice-preview-box">
-        <div className="voice-box-header">
-          <div className="voice-title">
-            <Volume2 size={16} className="text-indigo-400" />
-            <span>Voice Narrator — Sarvam Samvaad (audio preview)</span>
-          </div>
+      {/* Big Speak Plan Button */}
+      <div className="flex flex-col gap-4 mt-6">
+        <button
+          type="button"
+          className={`speak-plan-btn ${speechActive ? 'active' : ''}`}
+          onClick={speechActive ? onStop : onPlay}
+        >
+          <Volume2 size={18} />
+          <span>{speechActive ? 'Stop Speaking' : 'Speak Plan'}</span>
+          {speechActive && <span className="speak-status-dot" />}
+        </button>
 
-          <div className="audio-controls">
-            {speechActive ? (
-              <button
-                type="button"
-                className="audio-btn active"
-                onClick={onStop}
-                title="Stop Audio"
-              >
-                <Square size={14} fill="currentColor" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="audio-btn"
-                onClick={onPlay}
-                title="Play Narration"
-              >
-                <Play size={14} fill="currentColor" />
-              </button>
-            )}
-          </div>
+        <div className="voice-preview-box">
+          <p className="voice-text">
+            &ldquo;{VOICE_NARRATION}&rdquo;
+          </p>
         </div>
-
-        <p className="voice-text">
-          &ldquo;{VOICE_NARRATION}&rdquo;
-        </p>
       </div>
     </div>
   )
