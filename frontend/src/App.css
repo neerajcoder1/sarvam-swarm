@@ -98,6 +98,7 @@
   width: 100%;
   max-width: 680px;
   text-align: center;
+  margin-top: 5rem;
 }
 
 .main-input-bar {
@@ -1094,4 +1095,33 @@ html.light .glow-orb {
   border-color: rgba(79, 70, 229, 0.55) !important;
   color: #FFFFFF !important;
   box-shadow: 0 0 20px rgba(79, 70, 229, 0.22) !important;
+}
+
+/* ── Homepage Hero Title Block ── */
+.homepage-hero-group {
+  margin-bottom: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.homepage-hero-title {
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: #4F46E5;
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.12), 0 0 50px rgba(79, 70, 229, 0.25);
+  margin: 0;
+}
+
+.homepage-hero-subtitle {
+  font-size: 1.25rem;
+  color: #CBD5E1;
+  font-weight: 400;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  letter-spacing: -0.01em;
+  opacity: 0.85;
 }

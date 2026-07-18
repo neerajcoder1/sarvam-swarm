@@ -335,6 +335,12 @@ export default function Dashboard() {
               exit={{ y: 350, opacity: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
             >
+              {/* Large Centered Title */}
+              <div className="homepage-hero-group">
+                <h1 className="homepage-hero-title">Sarvam Swarm</h1>
+                <p className="homepage-hero-subtitle">— Autonomous Personalized Life Co-Pilot</p>
+              </div>
+
               {/* Quick Suggestions Bar */}
               <div className="suggestions-container">
                 <span className="suggestions-title">Try these commands</span>
