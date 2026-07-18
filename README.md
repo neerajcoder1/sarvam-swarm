@@ -4,7 +4,7 @@
 
 ### Multi-Agent Productivity & Wellness Swarm Engine
 
-**Smart Campus Hackathon 2026**
+**Hackathon 2026**
 
 **Team:** Seedhe Code
 
