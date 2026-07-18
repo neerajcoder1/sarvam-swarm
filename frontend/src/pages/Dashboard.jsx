@@ -6,6 +6,8 @@ import SwarmAgentCard from '../components/SwarmAgentCard'
 import AgentTracePanel from '../components/AgentTracePanel'
 import DayPlanOutput from '../components/DayPlanOutput'
 import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
+import { speakText, cancelSpeech, createSpeechRecognition } from '../agents/speech'
+import { runSwarmOrchestration } from '../agents/orchestrator'
 const QUICK_SUGGESTIONS = [
   "Plan my day",
   "What's my schedule today?",
@@ -24,14 +26,20 @@ export default function Dashboard() {
   const [completedAgents, setCompletedAgents] = useState(new Set())
   const [selectedAgentId, setSelectedAgentId] = useState(null)
   const [speechActive, setSpeechActive] = useState(false)
-  
   const [agentsData, setAgentsData] = useState(SWARM_AGENTS)
-  const [tasksData, setTasksData] = useState(DAY_PLAN_TASKS)
   const [voiceNarrationData, setVoiceNarrationData] = useState(VOICE_NARRATION)
+  const [tasksList, setTasksList] = useState([])
+  const [predictionAdded, setPredictionAdded] = useState(false)
+  const [predictiveMode, setPredictiveMode] = useState(false)
+  const [toastMessage, setToastMessage] = useState(null)
+  const [profileLoaded, setProfileLoaded] = useState(() => {
+    return localStorage.getItem('sarwam_profile_loaded') === 'true'
+  })
 
   const recognitionRef = useRef(null)
   const bottomRef = useRef(null)
   const timersRef = useRef([])
+  const toastTimerRef = useRef(null)
 
   const clearTimers = () => {
     timersRef.current.forEach(clearTimeout)
@@ -41,6 +49,9 @@ export default function Dashboard() {
   useEffect(() => {
     return () => {
       clearTimers()
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current)
+      }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel()
       }
@@ -58,13 +69,31 @@ export default function Dashboard() {
 
   // Web Speech API Voice Recognition
   const toggleListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    
-    if (!SpeechRecognition) {
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+      setIsListening(false)
+      return
+    }
+
+    const recognition = createSpeechRecognition(
+      (transcript) => {
+        setInput(transcript)
+        handleStartSwarm(transcript)
+      },
+      (err) => {
+        console.error('Speech recognition error:', err)
+        setIsListening(false)
+      },
+      () => {
+        setIsListening(false)
+      }
+    )
+
+    if (!recognition) {
       // Fallback simulated voice typing
-      if (isListening) return
       setIsListening(true)
-      
       const simulatedText = "Hey Swarm, plan my day. I have a presentation at 3 PM, feeling low on energy."
       let currentIndex = 0
       
@@ -75,7 +104,6 @@ export default function Dashboard() {
         } else {
           clearInterval(typingTimer)
           setIsListening(false)
-          // Automatically trigger submit
           setTimeout(() => {
             handleStartSwarm(simulatedText)
           }, 600)
@@ -85,41 +113,87 @@ export default function Dashboard() {
       return
     }
 
-    if (isListening) {
-      recognitionRef.current?.stop()
+    try {
+      recognition.onstart = () => setIsListening(true)
+      recognitionRef.current = recognition
+      recognition.start()
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err)
       setIsListening(false)
-    } else {
-      try {
-        const recognition = new SpeechRecognition()
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-IN'; // Indian English accent context
+    }
+  }
 
-        recognition.onstart = () => {
-          setIsListening(true)
-        }
+  const triggerToast = (msg) => {
+    setToastMessage(msg)
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current)
+    }
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage(null)
+    }, 3000)
+  }
 
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript
-          setInput(transcript)
-          handleStartSwarm(transcript)
-        }
-
-        recognition.onerror = (err) => {
-          console.error('Speech recognition error:', err)
-          setIsListening(false)
-        }
-
-        recognition.onend = () => {
-          setIsListening(false)
-        }
-
-        recognitionRef.current = recognition
-        recognition.start()
-      } catch (err) {
-        console.error('Failed to start speech recognition:', err)
-        setIsListening(false)
+  const addBreakfastTask = () => {
+    setTasksList(prev => {
+      if (prev.some(t => t.time === '8:15 AM')) return prev
+      const breakfastTask = {
+        time: '8:15 AM',
+        title: 'Healthy breakfast routine',
+        description: 'Balanced breakfast — auto-added by proactive prediction.',
+        status: 'done'
       }
+      const updated = [...prev]
+      updated.splice(1, 0, breakfastTask)
+      return updated
+    })
+
+    setPredictionAdded(true)
+    triggerToast("✅ Added to your day")
+  }
+
+  const handleLoadProfile = () => {
+    localStorage.setItem('sarwam_profile_loaded', 'true')
+    setProfileLoaded(true)
+    triggerToast("👤 Profile Memory Loaded")
+
+    setTasksList(prev => {
+      let updated = [...prev]
+      
+      if (!updated.some(t => t.time === '8:30 AM')) {
+        const morningWalk = {
+          time: '8:30 AM',
+          title: '15-min morning walk',
+          description: 'Quick walk with mom — suggested from profile memory.',
+          status: 'done'
+        }
+        const insertIdx = updated.findIndex(t => t.time === '10:30 AM' || t.time === '2:30 PM')
+        updated.splice(insertIdx !== -1 ? insertIdx : 1, 0, morningWalk)
+      }
+
+      if (!updated.some(t => t.time === '2:15 PM')) {
+        const proteinSnack = {
+          time: '2:15 PM',
+          title: 'Protein snack & recharge',
+          description: 'Light snack to avoid energy dip — suggested from profile memory.',
+          status: 'done'
+        }
+        const insertIdx = updated.findIndex(t => t.time === '2:30 PM' || t.time === '3:00 PM')
+        updated.splice(insertIdx !== -1 ? insertIdx : updated.length - 1, 0, proteinSnack)
+      }
+
+      return updated
+    })
+  }
+
+  const togglePredictiveMode = () => {
+    const nextMode = !predictiveMode
+    setPredictiveMode(nextMode)
+    triggerToast(nextMode ? "⚡ Predictive Mode: ON" : "💤 Predictive Mode: OFF")
+    
+    if (nextMode && !predictionAdded) {
+      setTimeout(() => {
+        addBreakfastTask()
+      }, 600)
     }
   }
 
@@ -132,40 +206,60 @@ export default function Dashboard() {
     setSwarmPhase('idle')
     clearTimers()
 
-    let activeData = {
-      agents: SWARM_AGENTS,
-      tasks: DAY_PLAN_TASKS,
-      voice_narration: VOICE_NARRATION
-    }
+    // Reset prediction & tasks
+    setPredictionAdded(false)
+    setToastMessage(null)
 
-    try {
-      const response = await fetch('http://localhost:8000/api/swarm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: queryText }),
-      })
+    // Run the isolated agent swarm orchestration
+    const swarmTimers = await runSwarmOrchestration(queryText, {
+      onDataLoaded: (activeData) => {
+        setAgentsData(activeData.agents)
+        setVoiceNarrationData(activeData.voice_narration)
 
-      if (response.ok) {
-        const parsed = await response.json()
-        if (parsed && parsed.agents && parsed.tasks) {
-          activeData = parsed
-          console.log("Successfully retrieved data from FastAPI:", parsed)
+        let finalTasks = [...activeData.tasks]
+        if (profileLoaded) {
+          if (!finalTasks.some(t => t.time === '8:30 AM')) {
+            finalTasks.splice(1, 0, {
+              time: '8:30 AM',
+              title: '15-min morning walk',
+              description: 'Quick walk with mom — suggested from profile memory.',
+              status: 'done'
+            })
+          }
+          if (!finalTasks.some(t => t.time === '2:15 PM')) {
+            const insertIdx = finalTasks.findIndex(t => t.time === '2:30 PM' || t.time === '3:00 PM')
+            finalTasks.splice(insertIdx !== -1 ? insertIdx : finalTasks.length - 1, 0, {
+              time: '2:15 PM',
+              title: 'Protein snack & recharge',
+              description: 'Light snack to avoid energy dip — suggested from profile memory.',
+              status: 'done'
+            })
+          }
         }
-      } else {
-        console.warn("Backend returned error status, using default mock data.")
+        setTasksList(finalTasks)
+      },
+      onAgentAppear: (index) => {
+        setVisibleCount(index + 1)
+        setActiveAgentIndex(index)
+      },
+      onAgentComplete: (agentId, isLastAgent) => {
+        setCompletedAgents((prev) => {
+          const next = new Set(prev)
+          next.add(agentId)
+          return next
+        })
+        if (!isLastAgent) {
+          setActiveAgentIndex(prev => prev + 1)
+        }
+      },
+      onSwarmComplete: (voiceNarration) => {
+        setActiveAgentIndex(-1)
+        setSwarmPhase('complete')
+        triggerVoiceSpeech(voiceNarration)
       }
-    } catch (err) {
-      console.error("Failed to fetch from backend, using default mock data:", err)
-    }
+    })
 
-    // Set updated data in state
-    setAgentsData(activeData.agents)
-    setTasksData(activeData.tasks)
-    setVoiceNarrationData(activeData.voice_narration)
-
-    // Staggered sequential simulation using loaded agent list
+    // Setup transition from loading to active dashboard
     const startTimer = setTimeout(() => {
       setView('dashboard')
       setSwarmPhase('running')
@@ -174,57 +268,28 @@ export default function Dashboard() {
       setCompletedAgents(new Set())
       setSelectedAgentId(null)
 
-      // Sequential staggered execution (1.2 seconds delay per agent card)
-      activeData.agents.forEach((agent, index) => {
-        const appearTimer = setTimeout(() => {
-          setVisibleCount(index + 1)
-          setActiveAgentIndex(index)
-
-          const completeTimer = setTimeout(() => {
-            setCompletedAgents((prev) => {
-              const next = new Set(prev)
-              next.add(agent.id)
-              return next
-            })
-
-            if (index === activeData.agents.length - 1) {
-              setActiveAgentIndex(-1)
-              setSwarmPhase('complete')
-              // Automatically play the customized Hinglish voice narration
-              triggerVoiceSpeech(activeData.voice_narration)
-            } else {
-              setActiveAgentIndex(index + 1)
-            }
-          }, 1000) // complete slightly before next agent starts
-
-          timersRef.current.push(completeTimer)
-        }, index * 1200)
-
-        timersRef.current.push(appearTimer)
-      })
+      // Add all orchestration timers to global tracking
+      timersRef.current.push(...swarmTimers)
     }, 1500) // Transition loading -> dashboard in 1.5 seconds
 
     timersRef.current.push(startTimer)
   }
 
   const triggerVoiceSpeech = (textToSpeak = voiceNarrationData) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(textToSpeak)
-      utterance.lang = 'hi-IN' // Hinglish voice context
-      utterance.rate = 0.95
-      utterance.onstart = () => setSpeechActive(true)
-      utterance.onend = () => setSpeechActive(false)
-      utterance.onerror = () => setSpeechActive(false)
-      window.speechSynthesis.speak(utterance)
-    }
+    speakText(
+      textToSpeak,
+      () => setSpeechActive(true),
+      () => setSpeechActive(false),
+      (err) => {
+        console.error(err)
+        setSpeechActive(false)
+      }
+    )
   }
 
   const stopVoiceSpeech = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-      setSpeechActive(false)
-    }
+    cancelSpeech()
+    setSpeechActive(false)
   }
 
   const handleBackToHome = () => {
@@ -237,6 +302,8 @@ export default function Dashboard() {
     setCompletedAgents(new Set())
     setSelectedAgentId(null)
     setInput('')
+    setPredictionAdded(false)
+    setToastMessage(null)
   }
 
   const activeAgent = agentsData.find((a) => a.id === selectedAgentId)
@@ -357,7 +424,7 @@ export default function Dashboard() {
             <header className="dashboard-header">
               <div className="logo-group">
                 <div className="logo-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
                 </div>
                 <span className="logo-text">Sarvam Swarm</span>
               </div>
@@ -410,14 +477,125 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="dashboard-results-grid mt-8 text-left"
                   >
-                    <DayPlanOutput
-                      speechActive={speechActive}
-                      onPlay={() => triggerVoiceSpeech(voiceNarrationData)}
-                      onStop={stopVoiceSpeech}
-                      tasks={tasksData}
-                      voiceNarration={voiceNarrationData}
-                    />
+                    {/* Left Column: Day Plan Output */}
+                    <div className="dashboard-results-left">
+                      <DayPlanOutput
+                        tasks={tasksList}
+                        speechActive={speechActive}
+                        onPlay={() => triggerVoiceSpeech(voiceNarrationData)}
+                        onStop={stopVoiceSpeech}
+                        voiceNarration={voiceNarrationData}
+                      />
+                    </div>
+
+                    {/* Right Column: Prediction + Memory Cards */}
+                    <div className="dashboard-results-right flex flex-col gap-6">
+                      {/* Swarm Prediction Card */}
+                      <div className="prediction-card glass-panel">
+                        <div className="prediction-card-header">
+                          <div className="prediction-card-title-group">
+                            <span className="prediction-card-icon">🕒</span>
+                            <div className="flex flex-col text-left">
+                              <h3 className="prediction-card-title">Swarm Prediction</h3>
+                              <p className="prediction-card-subtitle">Proactive AI Co-Pilot</p>
+                            </div>
+                          </div>
+
+                          {/* Toggle Switch */}
+                          <div className="flex items-center gap-3">
+                            <span className="prediction-toggle-label text-xs font-semibold text-slate-400">
+                              Predictive Mode: {predictiveMode ? 'ON' : 'OFF'}
+                            </span>
+                            <button
+                              type="button"
+                              className={`prediction-toggle-switch ${predictiveMode ? 'active' : ''}`}
+                              onClick={togglePredictiveMode}
+                              aria-label="Toggle Predictive Mode"
+                            >
+                              <div className="prediction-toggle-knob" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="prediction-card-body mt-2 text-left">
+                          <p className="prediction-card-desc">
+                            It’s 8:10 AM — you usually eat breakfast at 8:15. Want me to add it automatically?
+                          </p>
+                          
+                          <div className="prediction-card-actions mt-4 text-left">
+                            {predictionAdded ? (
+                              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+                                <span className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-xs font-bold">✓</span>
+                                <span>Added to your day</span>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                className="prediction-add-btn"
+                                onClick={addBreakfastTask}
+                              >
+                                Yes, add it now
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* My Profile Memory Card */}
+                      <div className="prediction-card glass-panel text-left">
+                        <div className="prediction-card-header">
+                          <div className="prediction-card-title-group">
+                            <span className="prediction-card-icon">👤</span>
+                            <div className="flex flex-col">
+                              <h3 className="prediction-card-title">My Profile Memory</h3>
+                              <p className="prediction-card-subtitle text-left">Swarm Memory Node</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="prediction-card-body mt-2 text-left">
+                          <p className="prediction-card-desc text-slate-300 font-medium">
+                            Swarm remembers: Priya prefers morning walks with mom. Gets low on energy between 2–4 PM. Always calls mom at 8:30 PM. Last task: Grocery list prepared.
+                          </p>
+
+                          <AnimatePresence>
+                            {profileLoaded ? (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mt-4 pt-3 border-t border-slate-700/50 flex flex-col gap-2 overflow-hidden"
+                              >
+                                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                                  Smart suggestions loaded:
+                                </span>
+                                <div className="flex flex-col gap-2 text-xs text-slate-300">
+                                  <div className="flex items-start gap-2 bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10">
+                                    <span className="text-indigo-400 font-bold">💡</span>
+                                    <span>Since you usually walk in the morning, I added 15-min walk (8:30 AM).</span>
+                                  </div>
+                                  <div className="flex items-start gap-2 bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10">
+                                    <span className="text-indigo-400 font-bold">💡</span>
+                                    <span>Your energy is low at 2 PM — should I suggest a protein snack? (Added at 2:15 PM).</span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <button
+                                type="button"
+                                className="prediction-add-btn mt-4"
+                                onClick={handleLoadProfile}
+                              >
+                                Load My Profile
+                              </button>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </div>
+
                     <div ref={bottomRef} />
                   </motion.div>
                 )}
@@ -437,8 +615,27 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <footer className="footer-text">
-        © 2026 Sarvam Swarm Lite · Autonomous Personalized Life Co-Pilot
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            className="toast-notification"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            style={{ x: "-50%" }}
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <footer className="footer-text flex flex-col gap-1 items-center justify-center">
+        <span>© 2026 Sarvam Swarm Lite · Autonomous Personalized Life Co-Pilot</span>
+        <span className="text-[10px] text-indigo-400 font-semibold tracking-wide uppercase mt-1">
+          ⚡ Swarm learns from you — 12 preferences saved
+        </span>
       </footer>
     </div>
   )

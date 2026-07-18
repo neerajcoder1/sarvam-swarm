@@ -446,7 +446,7 @@ html.light .main-input-bar {
   flex-direction: column;
   gap: 2rem;
   background: var(--surface);
-  border: 1px solid rgba(79, 70, 229, 0.28) !important;
+  border: 1px solid rgba(79, 70, 229, 0.45) !important;
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4), 0 0 25px rgba(79, 70, 229, 0.12) !important;
 }
 
@@ -923,4 +923,175 @@ html.light .glow-orb {
   box-shadow: 0 0 8px #FFFFFF;
   animation: status-pulse 1.2s infinite ease-in-out;
   margin-left: 0.25rem;
+}
+
+/* ── Proactive Prediction Card & Toggles ── */
+.prediction-card {
+  padding: 2rem;
+  border: 1px solid rgba(79, 70, 229, 0.28) !important;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4), 0 0 25px rgba(79, 70, 229, 0.12) !important;
+  background: var(--surface);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.prediction-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+}
+
+.prediction-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.prediction-card-icon {
+  font-size: 1.5rem;
+}
+
+.prediction-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.prediction-card-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+}
+
+.prediction-card-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 0.5rem;
+}
+
+.prediction-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.6rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #4F46E5, #6366F1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+}
+
+.prediction-add-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+}
+
+.prediction-add-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* iOS Toggle Switch */
+.prediction-toggle-switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--line-strong);
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  transition: background-color 0.3s ease;
+  outline: none;
+}
+
+.prediction-toggle-switch.active {
+  background-color: var(--accent);
+  border-color: var(--accent-soft);
+}
+
+.prediction-toggle-knob {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.prediction-toggle-switch.active .prediction-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* ── Toast Notification ── */
+.toast-notification {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(79, 70, 229, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(79, 70, 229, 0.2);
+  color: var(--text);
+  padding: 0.75rem 1.6rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 100;
+  font-family: var(--font-display);
+  pointer-events: none;
+}
+
+/* ── Dashboard Results 2-Column Grid ── */
+.dashboard-results-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.dashboard-results-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-results-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.secondary-voice-btn {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border: 1px solid rgba(79, 70, 229, 0.35) !important;
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.1) !important;
+  color: var(--text-muted) !important;
+}
+
+.secondary-voice-btn:hover {
+  background: rgba(79, 70, 229, 0.08) !important;
+  border-color: rgba(79, 70, 229, 0.55) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.22) !important;
 }

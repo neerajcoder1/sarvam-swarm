@@ -22,7 +22,7 @@ const taskItemVariants = {
   }
 }
 
-export default function DayPlanOutput({ speechActive, onPlay, onStop, tasks = DAY_PLAN_TASKS, voiceNarration = VOICE_NARRATION }) {
+export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration = VOICE_NARRATION, speechActive, onPlay, onStop }) {
   return (
     <div className="day-plan-card glass-panel pulse-glow">
       <div className="day-plan-header">
@@ -59,7 +59,7 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop, tasks = DA
       </motion.div>
 
       {/* Big Speak Plan Button */}
-      <div className="flex flex-col gap-4 mt-6">
+      <div className="flex flex-col gap-3 mt-6">
         <button
           type="button"
           className={`speak-plan-btn ${speechActive ? 'active' : ''}`}
@@ -68,6 +68,17 @@ export default function DayPlanOutput({ speechActive, onPlay, onStop, tasks = DA
           <Volume2 size={16} color="rgba(255, 255, 255, 0.85)" />
           <span>{speechActive ? 'Stop Speaking' : 'Speak Plan'}</span>
           {speechActive && <span className="speak-status-dot" />}
+        </button>
+
+        <button
+          type="button"
+          className="speak-plan-btn secondary-voice-btn"
+          onClick={() => {
+            alert("🎙️ Sarvam Voice API activation coming soon!")
+          }}
+        >
+          <Volume2 size={16} color="rgba(255, 255, 255, 0.75)" />
+          <span>Speak with Sarvam Voice</span>
         </button>
 
         <div className="voice-preview-box">
