@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [speechActive, setSpeechActive] = useState(false)
 
   const recognitionRef = useRef(null)
+  const bottomRef = useRef(null)
   const timersRef = useRef([])
 
   const clearTimers = () => {
@@ -41,6 +42,15 @@ export default function Dashboard() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (swarmPhase === 'complete') {
+      const scrollTimer = setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }, 350)
+      return () => clearTimeout(scrollTimer)
+    }
+  }, [swarmPhase])
 
   // Web Speech API Voice Recognition
   const toggleListening = () => {
@@ -314,10 +324,6 @@ export default function Dashboard() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
                 </div>
                 <span className="logo-text">Sarvam Swarm</span>
-                <div className="dashboard-title-pill">
-                  <div className="status-dot-active" />
-                  <span>Live Swarm Dashboard</span>
-                </div>
               </div>
 
               <div className="header-actions">
@@ -374,6 +380,7 @@ export default function Dashboard() {
                       onPlay={triggerVoiceSpeech}
                       onStop={stopVoiceSpeech}
                     />
+                    <div ref={bottomRef} />
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -1,6 +1,5 @@
-/* ── App Layout & Dashboard Styles ── */
 .app-container {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -8,6 +7,7 @@
   color: var(--text);
   overflow-y: auto;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 /* Header & Top Bar */
