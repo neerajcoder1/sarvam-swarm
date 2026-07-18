@@ -8,16 +8,6 @@
 
 **Team:** Seedhe Code
 
----
-
-[![Build Status](#)](#)
-[![License](#)](#)
-[![React](#)](#)
-[![FastAPI](#)](#)
-[![Python](#)](#)
-[![Vite](#)](#)
-[![Tailwind CSS](#)](#)
-[![Ollama](#)](#)
 
 *A resilient AI productivity platform that orchestrates multiple intelligent agents to optimize daily schedules while preserving user wellness through adaptive planning and fault-tolerant AI inference.*
 
