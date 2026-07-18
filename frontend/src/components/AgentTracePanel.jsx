@@ -5,7 +5,14 @@ export default function AgentTracePanel({ agent, onClose }) {
   if (!agent) return null
 
   return (
-    <div className="trace-panel-overlay" onClick={onClose}>
+    <motion.div
+      className="trace-panel-overlay"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+    >
       <motion.div
         className="trace-panel-content"
         onClick={(e) => e.stopPropagation()} // Prevent close on panel click
@@ -34,6 +41,6 @@ export default function AgentTracePanel({ agent, onClose }) {
           <p className="trace-body-text">{agent.trace}</p>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }

@@ -210,63 +210,63 @@ export default function Dashboard() {
     setPredictionAdded(false)
     setToastMessage(null)
 
-    // Run the isolated agent swarm orchestration
-    const swarmTimers = await runSwarmOrchestration(queryText, {
-      onDataLoaded: (activeData) => {
-        setAgentsData(activeData.agents)
-        setVoiceNarrationData(activeData.voice_narration)
-
-        let finalTasks = [...activeData.tasks]
-        if (profileLoaded) {
-          if (!finalTasks.some(t => t.time === '8:30 AM')) {
-            finalTasks.splice(1, 0, {
-              time: '8:30 AM',
-              title: '15-min morning walk',
-              description: 'Quick walk with mom — suggested from profile memory.',
-              status: 'done'
-            })
-          }
-          if (!finalTasks.some(t => t.time === '2:15 PM')) {
-            const insertIdx = finalTasks.findIndex(t => t.time === '2:30 PM' || t.time === '3:00 PM')
-            finalTasks.splice(insertIdx !== -1 ? insertIdx : finalTasks.length - 1, 0, {
-              time: '2:15 PM',
-              title: 'Protein snack & recharge',
-              description: 'Light snack to avoid energy dip — suggested from profile memory.',
-              status: 'done'
-            })
-          }
-        }
-        setTasksList(finalTasks)
-      },
-      onAgentAppear: (index) => {
-        setVisibleCount(index + 1)
-        setActiveAgentIndex(index)
-      },
-      onAgentComplete: (agentId, isLastAgent) => {
-        setCompletedAgents((prev) => {
-          const next = new Set(prev)
-          next.add(agentId)
-          return next
-        })
-        if (!isLastAgent) {
-          setActiveAgentIndex(prev => prev + 1)
-        }
-      },
-      onSwarmComplete: (voiceNarration) => {
-        setActiveAgentIndex(-1)
-        setSwarmPhase('complete')
-        triggerVoiceSpeech(voiceNarration)
-      }
-    })
-
     // Setup transition from loading to active dashboard
-    const startTimer = setTimeout(() => {
+    const startTimer = setTimeout(async () => {
       setView('dashboard')
       setSwarmPhase('running')
       setVisibleCount(0)
       setActiveAgentIndex(-1)
       setCompletedAgents(new Set())
       setSelectedAgentId(null)
+
+      // Run the isolated agent swarm orchestration
+      const swarmTimers = await runSwarmOrchestration(queryText, {
+        onDataLoaded: (activeData) => {
+          setAgentsData(activeData.agents)
+          setVoiceNarrationData(activeData.voice_narration)
+
+          let finalTasks = [...activeData.tasks]
+          if (profileLoaded) {
+            if (!finalTasks.some(t => t.time === '8:30 AM')) {
+              finalTasks.splice(1, 0, {
+                time: '8:30 AM',
+                title: '15-min morning walk',
+                description: 'Quick walk with mom — suggested from profile memory.',
+                status: 'done'
+              })
+            }
+            if (!finalTasks.some(t => t.time === '2:15 PM')) {
+              const insertIdx = finalTasks.findIndex(t => t.time === '2:30 PM' || t.time === '3:00 PM')
+              finalTasks.splice(insertIdx !== -1 ? insertIdx : finalTasks.length - 1, 0, {
+                time: '2:15 PM',
+                title: 'Protein snack & recharge',
+                description: 'Light snack to avoid energy dip — suggested from profile memory.',
+                status: 'done'
+              })
+            }
+          }
+          setTasksList(finalTasks)
+        },
+        onAgentAppear: (index) => {
+          setVisibleCount(index + 1)
+          setActiveAgentIndex(index)
+        },
+        onAgentComplete: (agentId, isLastAgent) => {
+          setCompletedAgents((prev) => {
+            const next = new Set(prev)
+            next.add(agentId)
+            return next
+          })
+          if (!isLastAgent) {
+            setActiveAgentIndex(prev => prev + 1)
+          }
+        },
+        onSwarmComplete: (voiceNarration) => {
+          setActiveAgentIndex(-1)
+          setSwarmPhase('complete')
+          triggerVoiceSpeech(voiceNarration)
+        }
+      })
 
       // Add all orchestration timers to global tracking
       timersRef.current.push(...swarmTimers)
@@ -615,6 +615,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {activeAgent && (
           <AgentTracePanel
+            key="trace-panel"
             agent={activeAgent}
             onClose={() => setSelectedAgentId(null)}
           />
