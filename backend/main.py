@@ -1,19 +1,25 @@
 import json
 import logging
 import re
+import copy
+import traceback
+import time
 from typing import List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import ollama
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging matching strict requirements: no unnecessary verbose logs.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger("swarm_backend")
 
 app = FastAPI(title="Sarvam Swarm Backend", version="1.0.0")
 
-# 1. WIDE-OPEN CORS MIDDLEWARE
+# 1. WIDE-OPEN CORS MIDDLEWARE FOR FRONTEND COMPATIBILITY
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,29 +28,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. RIGID DATA TYPING FOR SCHEMAS
-class SwarmRequest(BaseModel):
-    query: str = Field(..., description="The user query to be processed by the swarm.")
+# ==========================================
+# CONFIGURABLE MODEL & SYSTEM CONSTANTS
+# ==========================================
+# Configurable model. For maximum speed, 'llama3.2:3b' or 'qwen2.5:3b' are highly recommended.
+MODEL_NAME = "gemma3:4b"
 
-class AgentSchema(BaseModel):
-    id: str = Field(..., description="Unique ID for the agent matching React config.")
-    name: str = Field(..., description="Human-readable name of the agent.")
-    workingStatus: str = Field(..., description="Rigid string representing the working status.")
-    doneStatus: str = Field(..., description="Rigid string representing the done/completed status.")
-    trace: str = Field(..., description="The detailed system/thought trace of this agent.")
+# Expected agent IDs configuration
+EXPECTED_AGENT_IDS = ["orchestrator", "personalization", "task-executor", "recommendation", "voice-narrator"]
 
-class TaskSchema(BaseModel):
-    time: str = Field(..., description="String representing the scheduled time slot.")
-    title: str = Field(..., description="Title of the task.")
-    description: str = Field(..., description="Detailed description of the task.")
-    status: str = Field(..., description="Must be 'done' or a precise status string.")
+# Optimized prompt instructing the model to generate ONLY the dynamic components
+SYSTEM_PROMPT = """You are an AI swarm planning generator. Return ONLY JSON matching this format:
+{
+  "traces": {
+    "orchestrator": "trace text (20-35 words)",
+    "personalization": "trace text (20-35 words)",
+    "task-executor": "trace text (20-35 words)",
+    "recommendation": "trace text (20-35 words)",
+    "voice-narrator": "trace text (20-35 words)"
+  },
+  "tasks": [
+    {"time": "time string", "title": "task title", "description": "task details"}
+  ],
+  "voice_narration": "Hinglish narration string"
+}
+Generate 4-5 tasks. Traces must be 20-35 words. Return ONLY valid JSON, no explanations, no markdown wrappers."""
 
-class SwarmResponse(BaseModel):
-    agents: List[AgentSchema]
-    tasks: List[TaskSchema]
-    voice_narration: str
+RETRY_USER_PROMPT = "Return ONLY valid JSON. No markdown. No explanations."
 
-# Robust default mock data matching the frontend's original schema
+# Robust default mock response preserved and kept intact
 DEFAULT_MOCK_RESPONSE = {
     "agents": [
         {
@@ -72,7 +84,7 @@ DEFAULT_MOCK_RESPONSE = {
             "id": "recommendation",
             "name": "Recommendation Agent",
             "workingStatus": "Suggesting energy booster…",
-            "doneStatus": "Energy boosters added — light walk + protein snack before presentation.",
+            "doneStatus": "Positioned energy booster — light walk + protein snack before presentation.",
             "trace": "Low energy mitigation: recommend 12-min walk at 2:15 PM + banana-almond snack at 2:25 PM. Avoid caffeine after 4 PM to protect evening sleep. Grocery trip timed during natural energy lull (10:30 AM)."
         },
         {
@@ -118,145 +130,464 @@ DEFAULT_MOCK_RESPONSE = {
     "voice_narration": "Priya, aaj ka plan ready hai! Subah energy boost se start, dopahar presentation ke liye prep aur snack, shaam ko groceries aur maa ko call — sab time pe set hai. Tum bas follow karo, swarm handle karega!"
 }
 
-def clean_json_string(raw_str: str) -> str:
-    """Defensively cleans local model outputs of markdown wrappers, trailing text, etc."""
-    cleaned = raw_str.strip()
-    # Strip markdown code block fences if they exist
-    if cleaned.startswith("```"):
-        # Match ```json ... ``` or just ``` ... ```
-        match = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", cleaned)
-        if match:
-            cleaned = match.group(1).strip()
-    return cleaned
+# ==========================================
+# DATA TYPING SCHEMAS (UNCHANGED FOR FRONTEND COMPATIBILITY)
+# ==========================================
+class SwarmRequest(BaseModel):
+    query: str = Field(..., description="The user query to be processed by the swarm.")
 
-@app.post("/api/swarm", response_model=SwarmResponse)
-async def process_swarm_query(request: SwarmRequest):
-    query = request.query.strip()
-    logger.info(f"Received swarm query: {query}")
+class AgentSchema(BaseModel):
+    id: str = Field(..., description="Unique ID for the agent matching React config.")
+    name: str = Field(..., description="Human-readable name of the agent.")
+    workingStatus: str = Field(..., description="Rigid string representing the working status.")
+    doneStatus: str = Field(..., description="Rigid string representing the done/completed status.")
+    trace: str = Field(..., description="The detailed system/thought trace of this agent.")
 
-    if not query:
-        raise HTTPException(status_code=400, detail="Query cannot be empty.")
+class TaskSchema(BaseModel):
+    time: str = Field(..., description="String representing the scheduled time slot.")
+    title: str = Field(..., description="Title of the task.")
+    description: str = Field(..., description="Detailed description of the task.")
+    status: str = Field(..., description="Must be 'done' or a precise status string.")
 
-    system_prompt = (
-        "You are the orchestrator and simulation engine for a 5-agent life assistant swarm. "
-        "Your task is to analyze the user's query and simulate the interactions of 5 autonomous agents:\n"
-        "1. Orchestrator: Analyzes user query, detects key domains (work, wellness, family, tasks).\n"
-        "2. Personalization Agent: Tailors traces to user's daily habits, health markers, and preferences.\n"
-        "3. Task Executor Agent: Sequences concrete time-blocked tasks to achieve goals.\n"
-        "4. Recommendation Agent: Injects smart recommendations (nutrition, energy, breaks, location advice).\n"
-        "5. Voice Narrator Agent: Drafts a warm Hinglish summary of the day.\n\n"
-        "You must respond with a SINGLE valid JSON object. Do not output any notes, markdown markers outside the JSON, or chat preamble. "
-        "Strictly adhere to the following schema:\n"
-        "{\n"
-        '  "agents": [\n'
-        "    {\n"
-        '      "id": "orchestrator",\n'
-        '      "name": "Orchestrator",\n'
-        '      "workingStatus": "Splitting your request…",\n'
-        '      "doneStatus": "<string summarizing what the orchestrator split/organized>",\n'
-        '      "trace": "<detailed system log text summarizing the input analysis>"\n'
-        "    },\n"
-        "    {\n"
-        '      "id": "personalization",\n'
-        '      "name": "Personalization Agent",\n'
-        '      "workingStatus": "Checking health + family profile…",\n'
-        '      "doneStatus": "<string summarizing personalization findings>",\n'
-        '      "trace": "<detailed personalization adjustments based on health, context, or profiles>"\n'
-        "    },\n"
-        "    {\n"
-        '      "id": "task-executor",\n'
-        '      "name": "Task Executor Agent",\n'
-        '      "workingStatus": "Creating prioritized tasks…",\n'
-        '      "doneStatus": "<string summarizing tasks sequenced>",\n'
-        '      "trace": "<detailed timeline reasoning log showing how tasks were prioritised and sequenced>"\n'
-        "    },\n"
-        "    {\n"
-        '      "id": "recommendation",\n'
-        '      "name": "Recommendation Agent",\n'
-        '      "workingStatus": "Suggesting energy booster…",\n'
-        '      "doneStatus": "<string summarizing recommendations added>",\n'
-        '      "trace": "<detailed recommendation details (e.g. food, specific physical activities, timing)>"\n'
-        "    },\n"
-        "    {\n"
-        '      "id": "voice-narrator",\n'
-        '      "name": "Voice Narrator Agent",\n'
-        '      "workingStatus": "Speaking in natural Hinglish…",\n'
-        '      "doneStatus": "Day plan narrated — ready for Sarvam Samvaad voice output.",\n'
-        '      "trace": "<voice narration trace confirming the Hinglish format and TTS pipeline status>"\n'
-        "    }\n"
-        "  ],\n"
-        '  "tasks": [\n'
-        "    {\n"
-        '      "time": "<formatted time string, e.g. 9:00 AM>",\n'
-        '      "title": "<short task name>",\n'
-        '      "description": "<detailed action description adapted to the query>",\n'
-        '      "status": "done"\n'
-        "    }\n"
-        "  ],\n"
-        '  "voice_narration": "<friendly Hinglish audio narration summary script starting with Priya, e.g. \'Priya, aaj ka plan ready hai!...\'>"\n'
-        "}\n\n"
-        "Ensure all fields are filled dynamically according to the user's input request: "
-        f"'{query}'"
-    )
+class SwarmResponse(BaseModel):
+    agents: List[AgentSchema]
+    tasks: List[TaskSchema]
+    voice_narration: str
 
+
+# ==========================================
+# CORE UTILITY & PARSING FUNCTIONS
+# ==========================================
+_MODEL_NAME_CACHE = None
+
+def get_model_name() -> str:
+    """Discovers available models from Ollama, caching the result. Defaults to global MODEL_NAME."""
+    global _MODEL_NAME_CACHE
+    if _MODEL_NAME_CACHE is not None:
+        return _MODEL_NAME_CACHE
+        
     try:
-        # Request generation from local Ollama service using Llama3
-        logger.info("Attempting local Ollama generation using llama3...")
-        response = ollama.chat(
-            model="llama3",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Generate the swarm output JSON for: '{query}'"}
-            ],
-            options={"temperature": 0.2}
-        )
-        
-        raw_content = response['message']['content']
-        cleaned_content = clean_json_string(raw_content)
-        parsed_json = json.loads(cleaned_content)
-        
-        # Verify basic structure to avoid Pydantic validation errors
-        if "agents" in parsed_json and "tasks" in parsed_json and "voice_narration" in parsed_json:
-            # Enforce exactly 5 agents in correct order
-            agent_ids = [a["id"] for a in parsed_json["agents"]]
-            expected_ids = ["orchestrator", "personalization", "task-executor", "recommendation", "voice-narrator"]
-            if len(parsed_json["agents"]) == 5 and all(eid in agent_ids for eid in expected_ids):
-                logger.info("Ollama generated successfully and schema validation passed.")
-                return parsed_json
-            else:
-                logger.warning("Ollama did not return the 5 expected agent IDs. Falling back.")
-        else:
-            logger.warning("Ollama output missing top-level keys. Falling back.")
+        response = ollama.list()
+        models = []
+        if isinstance(response, dict):
+            models = response.get("models", [])
+        elif isinstance(response, list):
+            models = response
+            
+        available_names = []
+        for m in models:
+            if isinstance(m, dict):
+                name = m.get("model") or m.get("name")
+                if name:
+                    available_names.append(name)
+            elif hasattr(m, "model"):
+                available_names.append(m.model)
+            elif hasattr(m, "name"):
+                available_names.append(m.name)
+                
+        if available_names:
+            if MODEL_NAME in available_names:
+                _MODEL_NAME_CACHE = MODEL_NAME
+                return MODEL_NAME
+            base_default = MODEL_NAME.split(":")[0]
+            for name in available_names:
+                if name.startswith(base_default):
+                    _MODEL_NAME_CACHE = name
+                    return name
+            _MODEL_NAME_CACHE = available_names[0]
+            return _MODEL_NAME_CACHE
+    except Exception:
+        pass
+    _MODEL_NAME_CACHE = MODEL_NAME
+    return MODEL_NAME
 
+def find_json_objects(text: str) -> list:
+    """Finds all potential JSON object substrings in text using a brace-matching state machine.
+    Respects string literals, escapes, and nesting, avoiding corrupted parsing on text/brackets in strings.
+    """
+    candidates = []
+    n = len(text)
+    in_string = False
+    escape = False
+    brace_depth = 0
+    start_idx = -1
+    
+    i = 0
+    while i < n:
+        char = text[i]
+        
+        if escape:
+            escape = False
+            i += 1
+            continue
+            
+        if char == '\\':
+            escape = True
+            i += 1
+            continue
+            
+        if char == '"':
+            in_string = not in_string
+            i += 1
+            continue
+            
+        if not in_string:
+            if char == '{':
+                if brace_depth == 0:
+                    start_idx = i
+                brace_depth += 1
+            elif char == '}':
+                if brace_depth > 0:
+                    brace_depth -= 1
+                    if brace_depth == 0 and start_idx != -1:
+                        candidate = text[start_idx : i + 1]
+                        candidates.append(candidate)
+        i += 1
+        
+    return candidates
+
+def clean_json_string(raw_str: str) -> str:
+    """Extracts and returns the best valid JSON object string from a raw string.
+    Optimized: Quick path check for pre-formatted JSON to bypass the parsing state machine.
+    """
+    if not raw_str:
+        return ""
+        
+    # Quick Path: Check if text is already a clean JSON object (common when format='json' is used)
+    cleaned = raw_str.strip()
+    if cleaned.startswith("{") and cleaned.endswith("}"):
+        try:
+            json.loads(cleaned)
+            return cleaned
+        except Exception:
+            pass
+            
+    # Fallback to state machine for cleaning markdown wrappers and conversational noise
+    candidates = find_json_objects(raw_str)
+    valid_candidates = []
+    for cand in candidates:
+        try:
+            parsed = json.loads(cand)
+            if isinstance(parsed, dict):
+                valid_candidates.append((cand, parsed))
+        except Exception:
+            continue
+            
+    if not valid_candidates:
+        # Regex cleanup fallback
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+        cleaned = cleaned.strip()
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            candidate = cleaned[start:end+1]
+            try:
+                json.loads(candidate)
+                return candidate
+            except Exception:
+                pass
+        return raw_str
+        
+    # Score candidates to select the actual response data block
+    best_cand_str = None
+    best_score = -1
+    
+    for cand_str, parsed_dict in valid_candidates:
+        score = 0
+        # Accepts either "traces" mapping or "agents" list format
+        if "traces" in parsed_dict or "agents" in parsed_dict:
+            score += 4
+        if "tasks" in parsed_dict:
+            score += 2
+            if isinstance(parsed_dict["tasks"], list):
+                score += min(len(parsed_dict["tasks"]), 5)
+        if "voice_narration" in parsed_dict and isinstance(parsed_dict["voice_narration"], str) and parsed_dict["voice_narration"].strip():
+            score += 5
+            
+        if score > best_score:
+            best_score = score
+            best_cand_str = cand_str
+            
+    return best_cand_str or valid_candidates[0][0]
+
+def repair_and_build_response(data: dict) -> dict:
+    """Repairs partial responses and constructs the final SwarmResponse structure.
+    Saves token generation overhead by populating static agent profiles in python.
+    """
+    if not isinstance(data, dict):
+        return None
+        
+    default_ref = DEFAULT_MOCK_RESPONSE
+    
+    # 1. Resolve traces (supports both traces dict and agents list formats)
+    traces = {}
+    gen_traces = data.get("traces")
+    if isinstance(gen_traces, dict):
+        for k, v in gen_traces.items():
+            if isinstance(v, str) and v.strip():
+                traces[k] = v.strip()
+    
+    # Fallback to check if model returned agents list instead of traces dict
+    gen_agents = data.get("agents")
+    if isinstance(gen_agents, list):
+        for a in gen_agents:
+            if isinstance(a, dict) and "id" in a and "trace" in a:
+                if isinstance(a["trace"], str) and a["trace"].strip():
+                    traces[a["id"]] = a["trace"].strip()
+                    
+    # Build the final 5 agents list
+    agents_list = []
+    for default_agent in default_ref["agents"]:
+        aid = default_agent["id"]
+        trace_val = traces.get(aid) or default_agent["trace"]
+        agents_list.append({
+            "id": aid,
+            "name": default_agent["name"],
+            "workingStatus": default_agent["workingStatus"],
+            "doneStatus": default_agent["doneStatus"],
+            "trace": trace_val
+        })
+        
+    # 2. Resolve tasks
+    tasks_list = []
+    gen_tasks = data.get("tasks")
+    if isinstance(gen_tasks, list) and gen_tasks:
+        for idx, task in enumerate(gen_tasks):
+            if not isinstance(task, dict):
+                ref_task = default_ref["tasks"][idx % len(default_ref["tasks"])]
+                tasks_list.append(copy.deepcopy(ref_task))
+                continue
+            tasks_list.append({
+                "time": str(task.get("time") or "N/A"),
+                "title": str(task.get("title") or "Task"),
+                "description": str(task.get("description") or "Details not provided."),
+                "status": "done"  # Rigidly enforce "done"
+            })
+    else:
+        tasks_list = copy.deepcopy(default_ref["tasks"])
+        
+    # 3. Resolve voice narration
+    voice_narration = data.get("voice_narration")
+    if not isinstance(voice_narration, str) or not voice_narration.strip():
+        voice_narration = default_ref["voice_narration"]
+        
+    return {
+        "agents": agents_list,
+        "tasks": tasks_list,
+        "voice_narration": voice_narration
+    }
+
+def verbose_validate_and_repair(raw_content: str, attempt_num: int) -> dict:
+    """Logs raw output, parses it, records JSON parse and validation durations, and repairs the schema.
+    """
+    logger.info(f"--- [Attempt {attempt_num}] Validation & Parsing Trace ---")
+    logger.info(f"COMPLETE raw Ollama response:\n{raw_content}")
+    
+    cleaned = clean_json_string(raw_content)
+    logger.info(f"Cleaned JSON substring:\n{cleaned}")
+    
+    # Try parsing JSON
+    parse_start = time.perf_counter()
+    try:
+        data = json.loads(cleaned)
+        json_parse_time = (time.perf_counter() - parse_start) * 1000
+        logger.info(f"JSON parsing time: {json_parse_time:.2f} ms")
     except Exception as e:
-        logger.error(f"Failed to generate or parse response from Ollama: {str(e)}")
+        json_parse_time = (time.perf_counter() - parse_start) * 1000
+        logger.error(f"JSON parsing failed after {json_parse_time:.2f} ms!")
+        tb_str = "".join(traceback.format_exception(None, e, e.__traceback__))
+        logger.error(f"Traceback:\n{tb_str}")
+        return None
+        
+    # Repair and build response
+    val_start = time.perf_counter()
+    repaired = repair_and_build_response(data)
+    val_time = (time.perf_counter() - val_start) * 1000
+    logger.info(f"Validation & Repair time: {val_time:.2f} ms")
+    
+    return repaired
 
-    # 4. BULLETPROOF TRY-EXCEPT FALLBACK
-    logger.info("Using robust default mock fallback data.")
-    
-    # We can perform simple dynamic adjustments to the fallback data to make it feel responsive even in fallback mode!
-    fallback = dict(DEFAULT_MOCK_RESPONSE)
-    
-    # Simple keyword heuristics to adapt fallback details slightly if keywords match
+def get_fallback_response(query: str) -> dict:
+    """Dynamic fallback system supporting custom query keywords and referencing query."""
+    fallback = copy.deepcopy(DEFAULT_MOCK_RESPONSE)
     lower_query = query.lower()
-    if "lunch" in lower_query or "eat" in lower_query or "food" in lower_query:
+    
+    # Truncate user query for clean voice narration reference
+    trunc_query = query if len(query) <= 50 else query[:47] + "..."
+    fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye swarm plan ready hai! Sab tasks time pe set hain, tum bas follow karo, swarm handle karega!"
+    
+    if any(k in lower_query for k in ["lunch", "eat", "food"]):
         fallback["tasks"][1] = {
             "time": "1:00 PM",
             "title": "Healthy lunch suggestion",
             "description": "Enjoy a fresh salad + high-protein meal near your location as recommended by swarm.",
             "status": "done"
         }
-        fallback["voice_narration"] = "Priya, lunch block update ke saath plan ready hai! Healthy food options set hain, aur evening tasks line up ho gaye hain. Tum bas follow karo, swarm handle karega!"
-    elif "break" in lower_query or "relax" in lower_query:
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye healthy lunch block update ke saath plan ready hai! Healthy food options set hain aur evening tasks line up ho gaye hain. Tum bas follow karo, swarm handle karega!"
+        
+    elif any(k in lower_query for k in ["break", "relax"]):
         fallback["tasks"][2] = {
             "time": "4:30 PM",
             "title": "30 min relaxation break",
             "description": "Swarm scheduled a 30-min break to recharge. Notifications muted.",
             "status": "done"
         }
-        fallback["voice_narration"] = "Priya, breaks set ho chuki hain! Aaj stress free din rahega, buffer zones include kar diye hain. Tum bas follow karo, swarm handle karega!"
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye breaks set ho chuki hain! Aaj stress free din rahega, buffer zones include kar diye hain. Tum bas follow karo, swarm handle karega!"
+        
+    elif "meeting" in lower_query:
+        fallback["tasks"][3] = {
+            "time": "3:00 PM",
+            "title": "Important client meeting",
+            "description": "High-priority meeting sync. Swarm has prepped details and muted background notifications.",
+            "status": "done"
+        }
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye client meeting schedule ho chuki hai. Calendar protect kar diya hai, ready raho!"
+        
+    elif "coding" in lower_query:
+        fallback["tasks"][2] = {
+            "time": "2:00 PM",
+            "title": "Deep work coding session",
+            "description": "2-hour uninterrupted block for coding and system architecture design.",
+            "status": "done"
+        }
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye deep work coding session allocate kiya hai. Bina kisi distraction ke code complete karo!"
+        
+    elif "study" in lower_query:
+        fallback["tasks"][0] = {
+            "time": "9:00 AM",
+            "title": "Focused study session",
+            "description": "Reviewing research papers and system optimization guides. Phone set to DND.",
+            "status": "done"
+        }
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye morning study block prioritize kiya hai. Go and study hard, swarm will track!"
+        
+    elif "travel" in lower_query:
+        fallback["tasks"][1] = {
+            "time": "11:00 AM",
+            "title": "Travel slot & commute",
+            "description": "Travel to destination. Swarm verified the route, traffic looks clear.",
+            "status": "done"
+        }
+        fallback["voice_narration"] = f"Priya, aapki query '{trunc_query}' ke liye travel route update kar diya hai. Commute aur schedule smooth rahega!"
         
     return fallback
+
+
+# ==========================================
+# SWARM API ENDPOINT WITH TIMING METRICS
+# ==========================================
+@app.post("/api/swarm", response_model=SwarmResponse)
+async def process_swarm_query(request: SwarmRequest):
+    req_start = time.perf_counter()
+    query = request.query.strip()
+    logger.info(f"Incoming query: {query}")
+    
+    if not query:
+        raise HTTPException(status_code=400, detail="Query cannot be empty.")
+        
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": query}
+    ]
+    
+    model_name = get_model_name()
+    logger.info("Generation started")
+    
+    raw_content_1 = ""
+    try:
+        # First attempt (uses format="json" to force JSON generation inside Ollama for speed & precision)
+        # Increased num_predict to 1000 to prevent premature truncation of the generated JSON object
+        inf_start = time.perf_counter()
+        response = ollama.chat(
+            model=model_name,
+            messages=messages,
+            format="json",
+            stream=False,
+            keep_alive="30m",
+            options={
+                "temperature": 0.1,
+                "num_predict": 1000,  # Safe token generation budget preventing truncation
+                "top_p": 0.9,
+                "top_k": 40
+            }
+        )
+        inf_time = (time.perf_counter() - inf_start) * 1000
+        logger.info(f"Ollama inference time: {inf_time:.2f} ms")
+        
+        # Telemetry extraction and logging
+        raw_content_1 = response.get('message', {}).get('content', '')
+        done = response.get('done', True)
+        done_reason = response.get('done_reason', '')
+        eval_count = response.get('eval_count', 0)
+        
+        logger.info(f"Total characters received: {len(raw_content_1)}")
+        logger.info(f"Total tokens generated: {eval_count}")
+        logger.info(f"Generation ended normally: {done and done_reason == 'stop'}")
+        logger.info(f"Generation was truncated: {done_reason == 'limit'}")
+        if done_reason == 'limit':
+            logger.warning(f"Warning: First generation attempt truncated. Reason: limit (num_predict limit of 1000 reached)")
+            
+        repaired_json = verbose_validate_and_repair(raw_content_1, attempt_num=1)
+        
+        if repaired_json:
+            total_time = (time.perf_counter() - req_start) * 1000
+            logger.info(f"Generation completed. Total request time: {total_time:.2f} ms")
+            return repaired_json
+            
+        # First attempt failed validation or parsing: execute retry flow
+        logger.warning("Retry")
+        retry_messages = messages + [
+            {"role": "assistant", "content": raw_content_1},
+            {"role": "user", "content": RETRY_USER_PROMPT}
+        ]
+        
+        inf_start_retry = time.perf_counter()
+        retry_response = ollama.chat(
+            model=model_name,
+            messages=retry_messages,
+            format="json",
+            stream=False,
+            keep_alive="30m",
+            options={
+                "temperature": 0.1,
+                "num_predict": 1000,  # Safe token generation budget preventing truncation
+                "top_p": 0.9,
+                "top_k": 40
+            }
+        )
+        inf_time_retry = (time.perf_counter() - inf_start_retry) * 1000
+        logger.info(f"Ollama inference time (retry): {inf_time_retry:.2f} ms")
+        
+        raw_content_2 = retry_response.get('message', {}).get('content', '')
+        done_retry = retry_response.get('done', True)
+        done_reason_retry = retry_response.get('done_reason', '')
+        eval_count_retry = retry_response.get('eval_count', 0)
+        
+        logger.info(f"Total characters received (retry): {len(raw_content_2)}")
+        logger.info(f"Total tokens generated (retry): {eval_count_retry}")
+        logger.info(f"Generation ended normally (retry): {done_retry and done_reason_retry == 'stop'}")
+        logger.info(f"Generation was truncated (retry): {done_reason_retry == 'limit'}")
+        if done_reason_retry == 'limit':
+            logger.warning(f"Warning: Retry generation attempt truncated. Reason: limit (num_predict limit of 1000 reached)")
+            
+        repaired_json_retry = verbose_validate_and_repair(raw_content_2, attempt_num=2)
+        
+        if repaired_json_retry:
+            total_time = (time.perf_counter() - req_start) * 1000
+            logger.info(f"Generation completed. Total request time: {total_time:.2f} ms")
+            return repaired_json_retry
+            
+        logger.warning("Fallback used: Both generation attempts failed validation or parsing.")
+        
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        logger.error(traceback.format_exc())
+        logger.warning("Fallback used: Exception raised during Ollama API request execution.")
+        
+    total_time = (time.perf_counter() - req_start) * 1000
+    logger.info(f"Request completed via fallback. Total request time: {total_time:.2f} ms")
+    return get_fallback_response(query)
 
 if __name__ == "__main__":
     import uvicorn

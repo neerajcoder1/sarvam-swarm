@@ -4,7 +4,7 @@
 
 ### Multi-Agent Productivity & Wellness Swarm Engine
 
-**Smart Campus Hackathon 2026**
+**Hackathon 2026**
 
 **Team:** Seedhe Code
 
@@ -66,13 +66,13 @@ Students and professionals often struggle with:
 
 Traditional productivity applications simply store tasks.
 
-VisionX SwarmAssist actively **reasons** about tasks through a collaborative swarm of AI agents and continuously produces an optimized execution strategy.
+SwarmAssist actively **reasons** about tasks through a collaborative swarm of AI agents and continuously produces an optimized execution strategy.
 
 ---
 
 # Solution
 
-VisionX SwarmAssist employs a **Sequential Multi-Agent Swarm Engine** where each agent owns a dedicated responsibility.
+ SwarmAssist employs a **Sequential Multi-Agent Swarm Engine** where each agent owns a dedicated responsibility.
 
 The backend coordinates these agents asynchronously while safeguarding the user experience through intelligent timeout recovery.
 
@@ -217,7 +217,7 @@ Native browser Speech Synthesis narrates the generated daily schedule.
 
 # Defensive Timeout Strategy
 
-One of the distinguishing engineering decisions in VisionX SwarmAssist is the implementation of an **asynchronous defensive timeout guard**.
+One of the distinguishing engineering decisions in  SwarmAssist is the implementation of an **asynchronous defensive timeout guard**.
 
 During live hackathon demonstrations, locally hosted LLMs may experience variable response times depending on available CPU, RAM, and model size.
 

@@ -47,14 +47,21 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    return () => {
-      clearTimers()
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current)
+    if ('speechSynthesis' in window) {
+      // Pre-load voices for Chrome/Edge
+      window.speechSynthesis.getVoices()
+      const handleVoicesChanged = () => {
+        window.speechSynthesis.getVoices()
       }
-      if ('speechSynthesis' in window) {
+      window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged)
+
+      return () => {
+        clearTimers()
         window.speechSynthesis.cancel()
+        window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged)
       }
+    } else {
+      return () => clearTimers()
     }
   }, [])
 
@@ -96,7 +103,7 @@ export default function Dashboard() {
       setIsListening(true)
       const simulatedText = "Hey Swarm, plan my day. I have a presentation at 3 PM, feeling low on energy."
       let currentIndex = 0
-      
+
       const typingTimer = setInterval(() => {
         if (currentIndex < simulatedText.length) {
           setInput(simulatedText.substring(0, currentIndex + 1))
@@ -109,7 +116,7 @@ export default function Dashboard() {
           }, 600)
         }
       }, 40)
-      
+
       return
     }
 
@@ -158,7 +165,7 @@ export default function Dashboard() {
 
     setTasksList(prev => {
       let updated = [...prev]
-      
+
       if (!updated.some(t => t.time === '8:30 AM')) {
         const morningWalk = {
           time: '8:30 AM',
@@ -189,7 +196,7 @@ export default function Dashboard() {
     const nextMode = !predictiveMode
     setPredictiveMode(nextMode)
     triggerToast(nextMode ? "⚡ Predictive Mode: ON" : "💤 Predictive Mode: OFF")
-    
+
     if (nextMode && !predictionAdded) {
       setTimeout(() => {
         addBreakfastTask()
@@ -200,7 +207,7 @@ export default function Dashboard() {
   // Trigger Swarm flow with FastAPI integration
   const handleStartSwarm = async (queryText = input) => {
     if (!queryText.trim()) return
-    
+
     // First transition to loading view
     setView('loading')
     setSwarmPhase('idle')
@@ -371,7 +378,7 @@ export default function Dashboard() {
                   onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
                   disabled={isListening}
                 />
-                
+
                 {isListening && (
                   <span className="voice-status-label animate-pulse">Voice Input</span>
                 )}
@@ -430,7 +437,7 @@ export default function Dashboard() {
             <header className="dashboard-header">
               <div className="logo-group">
                 <div className="logo-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></svg>
                 </div>
                 <span className="logo-text">Sarvam Swarm</span>
               </div>
@@ -529,7 +536,7 @@ export default function Dashboard() {
                           <p className="prediction-card-desc">
                             It’s 8:10 AM — you usually eat breakfast at 8:15. Want me to add it automatically?
                           </p>
-                          
+
                           <div className="prediction-card-actions mt-4 text-left">
                             {predictionAdded ? (
                               <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
