@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [speechActive, setSpeechActive] = useState(false)
   const [agentsData, setAgentsData] = useState(SWARM_AGENTS)
   const [voiceNarrationData, setVoiceNarrationData] = useState(VOICE_NARRATION)
+  const [voiceSettings, setVoiceSettings] = useState(null)
   const [tasksList, setTasksList] = useState([])
   const [predictionAdded, setPredictionAdded] = useState(false)
   const [predictiveMode, setPredictiveMode] = useState(false)
@@ -231,6 +232,7 @@ export default function Dashboard() {
         onDataLoaded: (activeData) => {
           setAgentsData(activeData.agents)
           setVoiceNarrationData(activeData.voice_narration)
+          setVoiceSettings(activeData.voice_settings)
 
           let finalTasks = [...activeData.tasks]
           if (profileLoaded) {
@@ -268,10 +270,10 @@ export default function Dashboard() {
             setActiveAgentIndex(prev => prev + 1)
           }
         },
-        onSwarmComplete: (voiceNarration) => {
+        onSwarmComplete: (voiceNarration, voiceSettingsObj) => {
           setActiveAgentIndex(-1)
           setSwarmPhase('complete')
-          triggerVoiceSpeech(voiceNarration)
+          triggerVoiceSpeech(voiceNarration, voiceSettingsObj)
         }
       })
 
@@ -282,9 +284,10 @@ export default function Dashboard() {
     timersRef.current.push(startTimer)
   }
 
-  const triggerVoiceSpeech = (textToSpeak = voiceNarrationData) => {
+  const triggerVoiceSpeech = (textToSpeak = voiceNarrationData, settings = voiceSettings) => {
     speakText(
       textToSpeak,
+      settings,
       () => setSpeechActive(true),
       () => setSpeechActive(false),
       (err) => {
@@ -497,7 +500,7 @@ export default function Dashboard() {
                       <DayPlanOutput
                         tasks={tasksList}
                         speechActive={speechActive}
-                        onPlay={() => triggerVoiceSpeech(voiceNarrationData)}
+                        onPlay={() => triggerVoiceSpeech(voiceNarrationData, voiceSettings)}
                         onStop={stopVoiceSpeech}
                         voiceNarration={voiceNarrationData}
                       />

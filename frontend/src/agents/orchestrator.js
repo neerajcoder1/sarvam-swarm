@@ -61,7 +61,7 @@ export const runSwarmOrchestration = async (
         if (onAgentComplete) onAgentComplete(agent.id, isLastAgent)
         
         if (isLastAgent && onSwarmComplete) {
-          onSwarmComplete(activeData.voice_narration)
+          onSwarmComplete(activeData.voice_narration, activeData.voice_settings)
         }
       }, 1000)
 
