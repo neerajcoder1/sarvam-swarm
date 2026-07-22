@@ -23,7 +23,7 @@ export default function AgentTracePanel({ agent, onClose }) {
       >
         <div className="trace-panel-header">
           <div className="trace-title">
-            <Brain size={18} className="text-indigo-400" />
+            <Brain size={18} className="text-[#0EA5E9]" />
             <span>Agent Trace — {agent.name}</span>
           </div>
           <button

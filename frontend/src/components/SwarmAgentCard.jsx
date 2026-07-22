@@ -22,7 +22,7 @@ export default function SwarmAgentCard({
   return (
     <motion.button
       type="button"
-      className={`swarm-agent-card glass-panel ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${isSelected ? 'border-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.25)]' : ''}`}
+      className={`swarm-agent-card glass-panel ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${isSelected ? 'border-[#0EA5E9] shadow-[0_0_10px_rgba(14,165,233,0.2)]' : ''}`}
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
@@ -39,7 +39,7 @@ export default function SwarmAgentCard({
           ) : isActive ? (
             <Loader2 size={16} className="swarm-spin" />
           ) : (
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-700" />
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-[var(--line-strong)]" />
           )}
         </div>
       </div>

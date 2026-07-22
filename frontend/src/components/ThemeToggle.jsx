@@ -5,16 +5,17 @@ export default function ThemeToggle() {
   const [dark, setDark] = useState(() => {
     const stored = localStorage.getItem('sarvam-swarm-theme')
     if (stored) return stored === 'dark'
-    return true // Default to dark theme first (ch-irax style)
+    return true // Default to dark theme
   })
 
   useEffect(() => {
+    const root = document.documentElement
     if (dark) {
-      document.documentElement.classList.add('dark')
-      document.documentElement.classList.remove('light')
+      root.classList.add('dark')
+      root.classList.remove('light')
     } else {
-      document.documentElement.classList.add('light')
-      document.documentElement.classList.remove('dark')
+      root.classList.add('light')
+      root.classList.remove('dark')
     }
     localStorage.setItem('sarvam-swarm-theme', dark ? 'dark' : 'light')
   }, [dark])
@@ -24,9 +25,10 @@ export default function ThemeToggle() {
       className="theme-toggle"
       onClick={() => setDark((prev) => !prev)}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       type="button"
     >
-      {dark ? <Sun size={17} /> : <Moon size={17} />}
+      {dark ? <Sun size={18} /> : <Moon size={18} />}
     </button>
   )
 }

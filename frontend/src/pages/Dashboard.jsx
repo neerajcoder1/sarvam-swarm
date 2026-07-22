@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info } from 'lucide-react'
+import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu } from 'lucide-react'
+import Sidebar from '../components/Sidebar'
 import ThemeToggle from '../components/ThemeToggle'
+import SwarmLogo from '../components/SwarmLogo'
 import SwarmAgentCard from '../components/SwarmAgentCard'
 import AgentTracePanel from '../components/AgentTracePanel'
 import DayPlanOutput from '../components/DayPlanOutput'
@@ -18,6 +20,8 @@ const QUICK_SUGGESTIONS = [
 
 export default function Dashboard() {
   const [view, setView] = useState('homepage') // 'homepage' | 'dashboard'
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [swarmPhase, setSwarmPhase] = useState('idle') // 'idle' | 'running' | 'complete'
@@ -209,6 +213,10 @@ export default function Dashboard() {
   const handleStartSwarm = async (queryText = input) => {
     if (!queryText.trim()) return
 
+    // Auto collapse sidebar as soon as task is performed
+    setSidebarCollapsed(true)
+    setSidebarOpen(false)
+
     // First transition to loading view
     setView('loading')
     setSwarmPhase('idle')
@@ -319,25 +327,50 @@ export default function Dashboard() {
   const activeAgent = agentsData.find((a) => a.id === selectedAgentId)
 
   return (
-    <div className="app-container">
-      {/* Background Animated Wallpaper */}
-      <div className="grid-overlay" aria-hidden="true" />
-      <div className="glow-orb glow-orb-1" aria-hidden="true" />
-      <div className="glow-orb glow-orb-2" aria-hidden="true" />
-      <div className="glow-orb glow-orb-3" aria-hidden="true" />
+    <div className="app-shell-flex">
+      {/* Permanent Left Sidebar (24% width with slide collapse) */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onToggleOpen={() => setSidebarOpen((prev) => !prev)}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+        onSelectAction={(promptText) => {
+          setSidebarCollapsed(true)
+          setSidebarOpen(false)
+          if (promptText) {
+            setInput(promptText)
+            handleStartSwarm(promptText)
+          }
+        }}
+        onNewConversation={() => {
+          handleBackToHome()
+          setSidebarOpen(false)
+        }}
+      />
 
-      <AnimatePresence mode="wait">
-        {view === 'homepage' ? (
-          <motion.div
-            key="homepage-view"
-            className="homepage-container"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="absolute top-6 right-6">
-              <ThemeToggle />
-            </div>
+      <div className="main-content-flex">
+        {/* Background Subtle Grid Overlay */}
+        <div className="grid-overlay" aria-hidden="true" />
+
+        <AnimatePresence mode="wait">
+          {view === 'homepage' ? (
+            <motion.div
+              key="homepage-view"
+              className="homepage-container"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="absolute top-4 left-4 lg:hidden">
+                <button
+                  type="button"
+                  className="mobile-menu-trigger"
+                  onClick={() => setSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                >
+                  <Menu size={18} />
+                </button>
+              </div>
 
             <motion.div
               className="input-container-centered"
@@ -345,9 +378,12 @@ export default function Dashboard() {
               exit={{ y: 350, opacity: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
             >
-              {/* Large Centered Title */}
+              {/* Large Centered Title with Swarm Logo */}
               <div className="homepage-hero-group">
-                <h1 className="homepage-hero-title">Sarvam Swarm</h1>
+                <div className="homepage-hero-title-row">
+                  <SwarmLogo size={56} className="homepage-hero-logo" />
+                  <h1 className="homepage-hero-title">Sarvam Swarm</h1>
+                </div>
                 <p className="homepage-hero-subtitle">— Autonomous Personalized Life Co-Pilot</p>
               </div>
 
@@ -372,12 +408,15 @@ export default function Dashboard() {
               </div>
 
               <div className="main-input-bar">
+                <div className="input-prefix-icon">
+                  <Plus size={20} />
+                </div>
                 <input
                   type="text"
                   className="main-input-field"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="+ What do you want to know?"
+                  placeholder="What do you want to know?"
                   onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
                   disabled={isListening}
                 />
@@ -392,7 +431,7 @@ export default function Dashboard() {
                   onClick={toggleListening}
                   title={isListening ? 'Listening...' : 'Voice Input'}
                 >
-                  <Mic size={22} />
+                  <Mic size={20} />
                 </button>
 
                 {input.trim() && (
@@ -402,7 +441,7 @@ export default function Dashboard() {
                     onClick={() => handleStartSwarm()}
                     title="Send Request"
                   >
-                    <Send size={18} />
+                    <Send size={16} />
                   </button>
                 )}
               </div>
@@ -439,8 +478,16 @@ export default function Dashboard() {
             {/* Header */}
             <header className="dashboard-header">
               <div className="logo-group">
-                <div className="logo-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></svg>
+                <button
+                  type="button"
+                  className="mobile-menu-trigger mr-1 lg:hidden"
+                  onClick={() => setSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                >
+                  <Menu size={18} />
+                </button>
+                <div className="logo-icon flex items-center justify-center">
+                  <SwarmLogo size={22} className="text-[var(--text)]" />
                 </div>
                 <span className="logo-text">Sarvam Swarm</span>
               </div>
@@ -449,7 +496,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={handleBackToHome}
-                  className="px-4 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 text-xs font-semibold text-slate-300 hover:text-slate-100 transition-all cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg border border-[var(--line)] hover:border-[var(--accent)] text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-all cursor-pointer"
                 >
                   Reset Dashboard
                 </button>
@@ -521,7 +568,7 @@ export default function Dashboard() {
 
                           {/* Toggle Switch */}
                           <div className="flex items-center gap-3">
-                            <span className="prediction-toggle-label text-xs font-semibold text-slate-400">
+                            <span className="prediction-toggle-label text-xs font-semibold text-[var(--text-subtle)]">
                               Predictive Mode: {predictiveMode ? 'ON' : 'OFF'}
                             </span>
                             <button
@@ -572,7 +619,7 @@ export default function Dashboard() {
                         </div>
 
                         <div className="prediction-card-body mt-2 text-left">
-                          <p className="prediction-card-desc text-slate-300 font-medium">
+                          <p className="prediction-card-desc text-[var(--text-muted)] font-medium">
                             Swarm remembers: Priya prefers morning walks with mom. Gets low on energy between 2–4 PM. Always calls mom at 8:30 PM. Last task: Grocery list prepared.
                           </p>
 
@@ -582,18 +629,18 @@ export default function Dashboard() {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="mt-4 pt-3 border-t border-slate-700/50 flex flex-col gap-2 overflow-hidden"
+                                className="mt-4 pt-3 border-t border-[var(--line)] flex flex-col gap-2 overflow-hidden"
                               >
-                                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                                <span className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider">
                                   Smart suggestions loaded:
                                 </span>
-                                <div className="flex flex-col gap-2 text-xs text-slate-300">
-                                  <div className="flex items-start gap-2 bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10">
-                                    <span className="text-indigo-400 font-bold">💡</span>
+                                <div className="flex flex-col gap-2 text-xs text-[var(--text-muted)]">
+                                  <div className="flex items-start gap-2 bg-[var(--surface-hover)] p-2.5 rounded-lg border border-[var(--line)]">
+                                    <span className="text-[var(--accent)] font-bold">💡</span>
                                     <span>Since you usually walk in the morning, I added 15-min walk (8:30 AM).</span>
                                   </div>
-                                  <div className="flex items-start gap-2 bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10">
-                                    <span className="text-indigo-400 font-bold">💡</span>
+                                  <div className="flex items-start gap-2 bg-[var(--surface-hover)] p-2.5 rounded-lg border border-[var(--line)]">
+                                    <span className="text-[var(--accent)] font-bold">💡</span>
                                     <span>Your energy is low at 2 PM — should I suggest a protein snack? (Added at 2:15 PM).</span>
                                   </div>
                                 </div>
@@ -650,10 +697,8 @@ export default function Dashboard() {
 
       <footer className="footer-text flex flex-col gap-1 items-center justify-center">
         <span>© 2026 Sarvam Swarm Lite · Autonomous Personalized Life Co-Pilot</span>
-        <span className="text-[10px] text-indigo-400 font-semibold tracking-wide uppercase mt-1">
-          ⚡ Swarm learns from you — 12 preferences saved
-        </span>
       </footer>
+      </div>
     </div>
   )
 }

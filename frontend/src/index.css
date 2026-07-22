@@ -1,49 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
-/* ── Design Tokens (ch-irax Cyber-Minimal, Dark Default) ── */
-:root {
-  --bg: #0F172A;
-  --bg-elevated: #1E2937;
-  --surface: rgba(30, 41, 55, 0.45);
-  --surface-hover: rgba(30, 41, 55, 0.65);
-  --surface-solid: #1E2937;
-  --line: rgba(148, 163, 184, 0.05);
-  --line-strong: rgba(148, 163, 184, 0.1);
-  --text: #E2E8F0;
-  --text-muted: #94A3B8;
-  --text-subtle: #64748B;
-  --accent: #4F46E5;
-  --accent-soft: #4F46E5;
-  --accent-glow: rgba(79, 70, 229, 0.1);
-  --accent-glow-strong: rgba(79, 70, 229, 0.18);
-  
-  --status-success: #38A169;
-  --status-success-bg: rgba(56, 161, 105, 0.08);
+/* ── Design Tokens ── */
+:root, html.dark {
+  color-scheme: dark;
+  --bg: #000000;
+  --bg-elevated: #0C0C0C;
+  --surface: #121212;
+  --surface-hover: #1A1A1A;
+  --surface-solid: #121212;
+  --line: #262626;
+  --line-strong: #333333;
+  --text: #FFFFFF;
+  --text-muted: #808080;
+  --text-subtle: #808080;
+  --accent: #2563EB;
+  --accent-soft: #3B82F6;
+  --accent-ring: rgba(37, 99, 235, 0.35);
+  --grid-line: rgba(255, 255, 255, 0.08);
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --code-keyword: #008000;
+  --code-string: #2563EB;
+  --code-number: #FF8000;
+  --code-comment: #808080;
+  
+  --status-success: #008000;
+  --status-success-bg: rgba(0, 128, 0, 0.15);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', sans-serif;
 }
 
 html.light {
+  color-scheme: light;
   --bg: #F8FAFC;
   --bg-elevated: #FFFFFF;
-  --surface: rgba(255, 255, 255, 0.6);
-  --surface-hover: rgba(255, 255, 255, 0.85);
+  --surface: #FFFFFF;
+  --surface-hover: #F1F5F9;
   --surface-solid: #FFFFFF;
-  --line: rgba(148, 163, 184, 0.12);
-  --line-strong: rgba(148, 163, 184, 0.22);
+  --line: #E2E8F0;
+  --line-strong: #CBD5E1;
   --text: #0F172A;
   --text-muted: #475569;
-  --text-subtle: #94A3B8;
-  --accent: #4F46E5;
-  --accent-soft: #6366F1;
-  --accent-glow: rgba(79, 70, 229, 0.08);
-  --accent-glow-strong: rgba(79, 70, 229, 0.15);
+  --text-subtle: #64748B;
+  --accent: #0284C7;
+  --accent-soft: #0284C7;
+  --accent-ring: rgba(2, 132, 199, 0.25);
+  --grid-line: rgba(203, 213, 225, 0.6);
+  
+  --status-success: #059669;
+  --status-success-bg: rgba(5, 150, 105, 0.1);
 }
 
-/* ── Global Styles ── */
+/* ── Global Reset & Base Styling ── */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -59,7 +69,19 @@ html, body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Focus states for accessibility & high-end SaaS feel */
+button, a, input, select, textarea {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
 }
 
 /* Smooth Scrollbars */
@@ -75,39 +97,24 @@ html, body {
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-soft);
+  background: var(--accent);
 }
 
-/* ── Premium Layout Styles ── */
+/* ── Layout Panels ── */
 .glass-panel {
   background: var(--surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--line);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-radius: 12px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-panel:hover {
   background: var(--surface-hover);
-  border-color: var(--line-strong);
-}
-
-/* ── Pulse Glow Animation ── */
-@keyframes soft-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px var(--accent-glow);
-    border-color: rgba(79, 70, 229, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 25px var(--accent-glow-strong);
-    border-color: rgba(79, 70, 229, 0.35);
-  }
+  border-color: var(--accent);
 }
 
 .pulse-glow {
-  animation: soft-pulse 3s infinite ease-in-out;
+  border-color: var(--accent);
 }
 
 /* Spinner */
