@@ -2,7 +2,7 @@
 
 
 
-# 🚀 SwarmAssist
+ <img src="logo.png"> SwarmAssist
 
 ### AI-Powered Multi-Agent Productivity & Wellness Engine
 
