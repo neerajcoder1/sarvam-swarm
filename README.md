@@ -1,9 +1,8 @@
 <div align="center">
 
 
-
- # <img src="logo.png"> 
- SwarmAssist
+ 
+# SwarmAssist
 
 ### AI-Powered Multi-Agent Productivity & Wellness Engine
 
