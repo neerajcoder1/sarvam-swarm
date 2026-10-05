@@ -73,9 +73,7 @@ export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration =
         <button
           type="button"
           className="speak-plan-btn secondary-voice-btn"
-          onClick={() => {
-            alert("🎙️ Sarvam Voice API activation coming soon!")
-          }}
+          onClick={speechActive ? onStop : onPlay}
         >
           <Volume2 size={16} color="rgba(255, 255, 255, 0.75)" />
           <span>Speak with Sarvam Voice</span>

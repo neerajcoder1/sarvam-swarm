@@ -13,6 +13,8 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
+from voice_service import voice_service
+
 # Load environment variables (e.g. from .env file during development)
 load_dotenv()
 
@@ -473,6 +475,7 @@ class SwarmResponse(BaseModel):
     voice_narration: str
     voice_settings: VoiceSettingsSchema
     detected_language: DetectedLanguageSchema
+    audio_base64: Optional[str] = None
 
 
 # ==========================================
@@ -941,7 +944,7 @@ async def process_swarm_query(request: SwarmRequest):
         # First attempt with Gemini 2.5 Flash
         inf_start = time.perf_counter()
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-flash-latest",
             contents=query,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -967,6 +970,13 @@ async def process_swarm_query(request: SwarmRequest):
         repaired_json = verbose_validate_and_repair(raw_content_1, attempt_num=1)
         
         if repaired_json:
+            audio_base64 = voice_service.generate_audio_base64(
+                repaired_json.get("voice_narration", ""),
+                repaired_json.get("detected_language", {}).get("language", "english")
+            )
+            repaired_json["audio_base64"] = audio_base64
+            if audio_base64:
+                logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
             total_time = (time.perf_counter() - req_start) * 1000
             logger.info(f"Incoming query: {query}")
             logger.info(f"Detected language: {repaired_json['detected_language']['language']}")
@@ -998,7 +1008,7 @@ async def process_swarm_query(request: SwarmRequest):
         
         inf_start_retry = time.perf_counter()
         retry_response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-flash-latest",
             contents=[query, dynamic_retry_prompt],
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -1024,6 +1034,13 @@ async def process_swarm_query(request: SwarmRequest):
         repaired_json_retry = verbose_validate_and_repair(raw_content_2, attempt_num=2)
         
         if repaired_json_retry:
+            audio_base64 = voice_service.generate_audio_base64(
+                repaired_json_retry.get("voice_narration", ""),
+                repaired_json_retry.get("detected_language", {}).get("language", "english")
+            )
+            repaired_json_retry["audio_base64"] = audio_base64
+            if audio_base64:
+                logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
             total_time = (time.perf_counter() - req_start) * 1000
             logger.info(f"Incoming query: {query}")
             logger.info(f"Detected language: {repaired_json_retry['detected_language']['language']}")
@@ -1045,6 +1062,13 @@ async def process_swarm_query(request: SwarmRequest):
         
     total_time = (time.perf_counter() - req_start) * 1000
     fallback_res = get_fallback_response(query)
+    audio_base64 = voice_service.generate_audio_base64(
+        fallback_res.get("voice_narration", ""),
+        fallback_res.get("detected_language", {}).get("language", "english")
+    )
+    fallback_res["audio_base64"] = audio_base64
+    if audio_base64:
+        logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
     logger.info(f"Incoming query: {query}")
     logger.info(f"Detected language: {fallback_res['detected_language']['language']}")
     logger.info(f"Normalized language: {fallback_res['detected_language']['language']}")

@@ -1,10 +1,20 @@
 /**
  * Speech synthesis utility wrappers for Hinglish / Indian accent text narration
  */
-export const speakText = (text, voiceSettings, onStart, onEnd, onError) => {
-  if (!('speechSynthesis' in window)) {
-    if (onError) onError('Speech synthesis not supported')
-    return
+
+let currentAudioElement = null;
+let currentAudioBlobUrl = null;
+
+export const speakText = (text, voiceSettings, onStart, onEnd, onError, audioData = null) => {
+  // Always clean up previous audio if running
+  if (currentAudioElement) {
+    currentAudioElement.pause();
+    currentAudioElement.src = "";
+    currentAudioElement = null;
+  }
+  if (currentAudioBlobUrl) {
+    URL.revokeObjectURL(currentAudioBlobUrl);
+    currentAudioBlobUrl = null;
   }
 
   // Handle optional voiceSettings for signature backward-compatibility
@@ -22,6 +32,44 @@ export const speakText = (text, voiceSettings, onStart, onEnd, onError) => {
     actualOnError = onEnd
   }
 
+  // Attempt HTML5 audio if Base64 audioData was provided from backend
+  if (audioData) {
+    try {
+      console.log('Playing backend-generated audio...');
+      // Data URI format: data:audio/wav;base64,...
+      const fetchResponse = fetch(audioData);
+      
+      fetchResponse.then(res => res.blob()).then(blob => {
+        currentAudioBlobUrl = URL.createObjectURL(blob);
+        currentAudioElement = new Audio(currentAudioBlobUrl);
+        
+        if (actualOnStart) currentAudioElement.addEventListener('play', actualOnStart);
+        if (actualOnEnd) currentAudioElement.addEventListener('ended', actualOnEnd);
+        if (actualOnError) currentAudioElement.addEventListener('error', actualOnError);
+        
+        currentAudioElement.play().catch(e => {
+          console.error("Audio playback failed", e);
+          if (actualOnError) actualOnError(e);
+        });
+      }).catch(err => {
+        console.error("Failed to parse audio blob", err);
+        // Fallback to browser TTS
+        fallbackToBrowserTTS(text, actualSettings, actualOnStart, actualOnEnd, actualOnError);
+      });
+      return;
+    } catch (err) {
+      console.error("Error setting up audio, falling back to browser TTS", err);
+    }
+  }
+
+  fallbackToBrowserTTS(text, actualSettings, actualOnStart, actualOnEnd, actualOnError);
+}
+
+const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, actualOnError) => {
+  if (!('speechSynthesis' in window)) {
+    if (actualOnError) actualOnError('Speech synthesis not supported')
+    return
+  }
   window.speechSynthesis.cancel()
 
   // Extract parameters from voice_settings
@@ -150,6 +198,16 @@ export const speakText = (text, voiceSettings, onStart, onEnd, onError) => {
 }
 
 export const cancelSpeech = () => {
+  if (currentAudioElement) {
+    currentAudioElement.pause();
+    currentAudioElement.src = "";
+    currentAudioElement = null;
+  }
+  if (currentAudioBlobUrl) {
+    URL.revokeObjectURL(currentAudioBlobUrl);
+    currentAudioBlobUrl = null;
+  }
+
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel()
   }

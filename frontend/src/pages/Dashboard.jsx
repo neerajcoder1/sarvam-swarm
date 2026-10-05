@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [agentsData, setAgentsData] = useState(SWARM_AGENTS)
   const [voiceNarrationData, setVoiceNarrationData] = useState(VOICE_NARRATION)
   const [voiceSettings, setVoiceSettings] = useState(null)
+  const [audioData, setAudioData] = useState(null)
   const [tasksList, setTasksList] = useState([])
   const [predictionAdded, setPredictionAdded] = useState(false)
   const [predictiveMode, setPredictiveMode] = useState(false)
@@ -241,6 +242,7 @@ export default function Dashboard() {
           setAgentsData(activeData.agents)
           setVoiceNarrationData(activeData.voice_narration)
           setVoiceSettings(activeData.voice_settings)
+          setAudioData(activeData.audio_base64 || null)
 
           let finalTasks = [...activeData.tasks]
           if (profileLoaded) {
@@ -278,10 +280,10 @@ export default function Dashboard() {
             setActiveAgentIndex(prev => prev + 1)
           }
         },
-        onSwarmComplete: (voiceNarration, voiceSettingsObj) => {
+        onSwarmComplete: (voiceNarration, voiceSettingsObj, audioBase64) => {
           setActiveAgentIndex(-1)
           setSwarmPhase('complete')
-          triggerVoiceSpeech(voiceNarration, voiceSettingsObj)
+          triggerVoiceSpeech(voiceNarration, voiceSettingsObj, audioBase64)
         }
       })
 
@@ -292,7 +294,7 @@ export default function Dashboard() {
     timersRef.current.push(startTimer)
   }
 
-  const triggerVoiceSpeech = (textToSpeak = voiceNarrationData, settings = voiceSettings) => {
+  const triggerVoiceSpeech = (textToSpeak = voiceNarrationData, settings = voiceSettings, audio = audioData) => {
     speakText(
       textToSpeak,
       settings,
@@ -301,7 +303,8 @@ export default function Dashboard() {
       (err) => {
         console.error(err)
         setSpeechActive(false)
-      }
+      },
+      audio
     )
   }
 
@@ -547,7 +550,7 @@ export default function Dashboard() {
                       <DayPlanOutput
                         tasks={tasksList}
                         speechActive={speechActive}
-                        onPlay={() => triggerVoiceSpeech(voiceNarrationData, voiceSettings)}
+                        onPlay={() => triggerVoiceSpeech(voiceNarrationData, voiceSettings, audioData)}
                         onStop={stopVoiceSpeech}
                         voiceNarration={voiceNarrationData}
                       />
