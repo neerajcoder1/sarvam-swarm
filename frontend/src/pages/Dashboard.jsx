@@ -515,7 +515,25 @@ export default function Dashboard() {
                   <p>Sequence details for coordinating wellness, calendar recovery and day priorities.</p>
                 </div>
 
-                <div className="agents-cards-grid mt-6">
+                <div className="agents-cards-grid mt-6 relative min-h-[300px]">
+                  {visibleCount === 0 && (
+                    <motion.div 
+                      className="absolute inset-0 flex flex-col items-center justify-center pt-10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <div className="premium-loader-rings mb-6 scale-75">
+                        <div className="loader-ring loader-ring-outer" />
+                        <div className="loader-ring loader-ring-inner" />
+                        <Brain className="loader-icon-center text-indigo-400" size={24} />
+                      </div>
+                      <h3 className="text-lg font-semibold text-[var(--text)] mb-2 animate-pulse">Waking up the Swarm...</h3>
+                      <p className="text-sm text-[var(--text-muted)] max-w-md text-center px-4">
+                        Synthesizing your prompt, analyzing memory, and generating premium voice audio. This may take 20-30 seconds.
+                      </p>
+                    </motion.div>
+                  )}
                   {agentsData.map((agent, index) => {
                     const isVisible = index < visibleCount
                     const isActive = index === activeAgentIndex && swarmPhase === 'running'

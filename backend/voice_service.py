@@ -5,6 +5,9 @@ import logging
 import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger("swarm_backend.voice")
 
@@ -50,7 +53,7 @@ class KokoroVoiceService:
             
             logger.info(f"Generating audio using Kokoro voice: {voice}")
             
-            generator = pipeline(text, voice=voice, speed=1)
+            generator = pipeline(text, voice=voice, speed=1.0)
             audio_chunks = []
             
             for _, _, audio in generator:
