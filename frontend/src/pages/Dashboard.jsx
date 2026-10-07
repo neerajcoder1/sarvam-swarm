@@ -7,6 +7,7 @@ import SwarmLogo from '../components/SwarmLogo'
 import SwarmAgentCard from '../components/SwarmAgentCard'
 import AgentTracePanel from '../components/AgentTracePanel'
 import DayPlanOutput from '../components/DayPlanOutput'
+import SwarmCapabilities from '../components/SwarmCapabilities'
 import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
 import { speakText, cancelSpeech, createSpeechRecognition } from '../agents/speech'
 import { runSwarmOrchestration } from '../agents/orchestrator'
@@ -19,7 +20,7 @@ const QUICK_SUGGESTIONS = [
 ]
 
 export default function Dashboard() {
-  const [view, setView] = useState('homepage') // 'homepage' | 'dashboard'
+  const [view, setView] = useState('splash') // 'splash' | 'homepage' | 'loading' | 'dashboard'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [input, setInput] = useState('')
@@ -51,6 +52,16 @@ export default function Dashboard() {
     timersRef.current.forEach(clearTimeout)
     timersRef.current = []
   }
+
+  // Splash Screen Timer
+  useEffect(() => {
+    if (view === 'splash') {
+      const splashTimer = setTimeout(() => {
+        setView('homepage')
+      }, 3000) // Show splash for 3 seconds
+      return () => clearTimeout(splashTimer)
+    }
+  }, [view])
 
   useEffect(() => {
     if ('speechSynthesis' in window) {
@@ -332,31 +343,54 @@ export default function Dashboard() {
   return (
     <div className="app-shell-flex">
       {/* Permanent Left Sidebar (24% width with slide collapse) */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        onToggleOpen={() => setSidebarOpen((prev) => !prev)}
-        isCollapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
-        onSelectAction={(promptText) => {
-          setSidebarCollapsed(true)
-          setSidebarOpen(false)
-          if (promptText) {
-            setInput(promptText)
-            handleStartSwarm(promptText)
-          }
-        }}
-        onNewConversation={() => {
-          handleBackToHome()
-          setSidebarOpen(false)
-        }}
-      />
+      {view !== 'splash' && (
+        <Sidebar
+          isOpen={sidebarOpen}
+          onToggleOpen={() => setSidebarOpen((prev) => !prev)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+          onSelectAction={(promptText) => {
+            setSidebarCollapsed(true)
+            setSidebarOpen(false)
+            if (promptText) {
+              setInput(promptText)
+              handleStartSwarm(promptText)
+            }
+          }}
+          onNewConversation={() => {
+            handleBackToHome()
+            setSidebarOpen(false)
+          }}
+        />
+      )}
 
       <div className="main-content-flex">
         {/* Background Subtle Grid Overlay */}
         <div className="grid-overlay" aria-hidden="true" />
 
         <AnimatePresence mode="wait">
-          {view === 'homepage' ? (
+          {view === 'splash' ? (
+            <motion.div
+              key="splash-view"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--background)] z-50 p-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="flex flex-col items-center gap-4 text-center max-w-4xl w-full">
+                <SwarmCapabilities />
+                <motion.h2 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.8 }}
+                  className="mt-2 text-xl md:text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text)] to-[var(--text-muted)]"
+                >
+                  Initializing Sarvam Swarm Network...
+                </motion.h2>
+              </div>
+            </motion.div>
+          ) : view === 'homepage' ? (
             <motion.div
               key="homepage-view"
               className="homepage-container"
