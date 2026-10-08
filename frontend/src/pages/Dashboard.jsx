@@ -470,13 +470,13 @@ export default function Dashboard() {
             </motion.div>
           ) : view === 'homepage' ? (
             <motion.div
-              className="homepage-container flex flex-col justify-between items-center h-[100dvh] max-h-[100dvh] py-3 px-4 overflow-hidden relative"
+              className="homepage-container flex flex-col justify-between items-center h-[100dvh] lg:h-full lg:max-h-none lg:justify-center py-3 lg:py-10 px-4 lg:px-8 overflow-hidden lg:overflow-y-auto relative"
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Top Navigation Bar */}
-              <div className="w-full flex items-center justify-between px-2 pt-1 max-w-2xl flex-none z-10">
+              {/* Top Navigation Bar — Mobile / Tablet Only (Hidden on Desktop) */}
+              <div className="w-full flex items-center justify-between px-2 pt-1 max-w-2xl flex-none z-10 lg:hidden">
                 <button
                   type="button"
                   className="p-2 rounded-xl bg-[#18181b] border border-[#27272a] text-white hover:bg-[#27272a] transition-colors cursor-pointer"
@@ -498,17 +498,30 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Center Hero Section (Top / Middle area) */}
-              <div className="w-full max-w-2xl flex flex-col items-center justify-center text-center my-auto py-2">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-sans">
-                  What should we explore?
-                </h1>
-                <p className="text-sm text-[#8e8f9a] mt-1.5">
-                  Autonomous Personalized Life Co-Pilot
-                </p>
+              {/* Center Hero Section */}
+              <div className="w-full max-w-2xl flex flex-col items-center justify-center text-center my-auto lg:my-0 py-2 lg:py-0">
+                
+                {/* Mobile Hero Title */}
+                <div className="text-center space-y-1.5 mt-2 mb-1 lg:hidden">
+                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+                    What should we explore?
+                  </h1>
+                  <p className="text-xs sm:text-sm text-[#8e8f9a]">
+                    Autonomous Personalized Life Co-Pilot
+                  </p>
+                </div>
+
+                {/* Desktop Hero Title with Big Swarm Logo */}
+                <div className="hidden lg:flex flex-col items-center text-center mb-6">
+                  <div className="flex items-center justify-center gap-4 mb-2">
+                    <SwarmLogo size={52} className="text-white" />
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white font-sans">Sarvam Swarm</h1>
+                  </div>
+                  <p className="text-sm font-medium text-[#8e8f9a] tracking-wide">— Autonomous Personalized Life Co-Pilot</p>
+                </div>
 
                 {/* Quick Suggestions Pills */}
-                <div className="w-full overflow-x-auto no-scrollbar pt-4 pb-1">
+                <div className="w-full overflow-x-auto no-scrollbar pt-2 sm:pt-4 pb-1">
                   <div className="flex items-center justify-center gap-2 flex-wrap sm:flex-nowrap">
                     {QUICK_SUGGESTIONS.map((suggestion) => (
                       <button
@@ -527,9 +540,9 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Bottom Container: SuperSwarm Banner + Input Card (Anchored to Bottom above keyboard) */}
+              {/* Bottom Container: SuperSwarm Banner + Input Card */}
               <motion.div 
-                className="w-full max-w-2xl flex flex-col gap-2.5 mt-auto pb-2 flex-none z-10"
+                className="w-full max-w-2xl flex flex-col gap-2.5 mt-auto lg:mt-6 pb-2 flex-none z-10"
                 initial={{ y: 0, opacity: 1 }}
                 exit={{ y: 350, opacity: 0 }}
                 transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
