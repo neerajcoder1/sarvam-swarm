@@ -366,6 +366,9 @@ export default function Dashboard() {
       setView('dashboard')
       setSidebarOpen(false)
       if (window.innerWidth < 768) setSidebarCollapsed(true)
+      
+      setVisibleCount(agentsData.length)
+      setCompletedAgents(new Set(agentsData.map(a => a.id)))
     }
   }
 
