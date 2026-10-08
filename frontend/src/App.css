@@ -1153,10 +1153,14 @@
   }
 
   .main-input-bar {
-    height: 50px;
-    padding: 0 0.75rem;
-    gap: 0.5rem;
-    border-radius: 10px;
+    height: 52px;
+    padding: 0 0.65rem 0 0.85rem;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    background: rgba(20, 20, 24, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 
   .main-input-field {

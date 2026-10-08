@@ -540,19 +540,18 @@ export default function Dashboard() {
 
                 
                 {/* Mode Selector Dropdown — visible on all screen sizes */}
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <button 
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl hover:bg-[#2c2d33] cursor-pointer transition-all text-[var(--text-muted)] hover:text-white text-sm font-medium"
+                    className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full hover:bg-[#2c2d33] cursor-pointer transition-all text-[var(--text-muted)] hover:text-white text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 border border-white/10 bg-white/5"
                   >
-                    {swarmMode === 'Lightning' && <Zap size={14} className="text-yellow-500" />}
-                    {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-400" />}
-                    {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-400" />}
-                    {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-400" />}
-                    {/* Show label on all screen sizes */}
-                    <span>{swarmMode}</span>
-                    <ChevronDown size={14} className="opacity-50 ml-0.5" />
+                    {swarmMode === 'Lightning' && <Zap size={13} className="text-yellow-500 flex-shrink-0" />}
+                    {swarmMode === 'Deep Swarm' && <Brain size={13} className="text-blue-400 flex-shrink-0" />}
+                    {swarmMode === 'Wellness Mode' && <Heart size={13} className="text-pink-400 flex-shrink-0" />}
+                    {swarmMode === 'Hustle Mode' && <Flame size={13} className="text-orange-400 flex-shrink-0" />}
+                    <span className="whitespace-nowrap text-xs sm:text-sm">{swarmMode}</span>
+                    <ChevronDown size={13} className="opacity-60 ml-0.5 flex-shrink-0" />
                   </button>
                   
                   {isDropdownOpen && (
