@@ -487,7 +487,7 @@ export default function Dashboard() {
                 </button>
 
                 <div 
-                  className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 active:scale-95 transition-all touch-manipulation z-20"
                   onClick={() => navigate('/about')}
                   title="About SwarmAssist System"
                 >
