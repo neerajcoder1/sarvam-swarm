@@ -7,6 +7,8 @@ import LegalModal from '../components/LegalModal'
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
+  const [workspace, setWorkspace] = useState('Swarm Lite')
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false)
   const [formData, setFormData] = useState({ username: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -74,12 +76,49 @@ export default function Auth() {
         <div className="flex items-center gap-3">
           <SwarmLogo size={28} className="opacity-90" />
         </div>
-        <div className="flex items-center gap-3 text-[13px] text-white/50">
+        <div className="flex items-center gap-3 text-[13px] text-white/50 relative">
           <span>You are signing into</span>
-          <button className="flex items-center gap-2 px-3 py-1.5 border border-white/20 rounded-full hover:bg-white/10 transition-colors text-white">
-            <span>Swarm</span>
+          <button 
+            onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 border border-white/20 rounded-full hover:bg-white/10 transition-colors text-white"
+          >
+            <span>{workspace}</span>
             <ChevronDown size={14} className="text-white/50" />
           </button>
+
+          <AnimatePresence>
+            {isWorkspaceOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                className="absolute top-full right-0 mt-2 w-48 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-50"
+              >
+                <div className="px-3 py-2 text-xs font-semibold text-white/40 uppercase tracking-wider">Select Environment</div>
+                <button 
+                  onClick={() => { setWorkspace('Swarm Lite'); setIsWorkspaceOpen(false) }}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                >
+                  Swarm Lite
+                  {workspace === 'Swarm Lite' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                </button>
+                <button 
+                  onClick={() => { setWorkspace('Swarm Ultra'); setIsWorkspaceOpen(false) }}
+                  className="w-full text-left px-4 py-2 text-sm text-orange-400 hover:bg-white/10 transition-colors flex justify-between items-center"
+                >
+                  Swarm Ultra
+                  {workspace === 'Swarm Ultra' && <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>}
+                </button>
+                <button 
+                  onClick={() => { setWorkspace('Enterprise'); setIsWorkspaceOpen(false) }}
+                  className="w-full text-left px-4 py-2 text-sm text-white/70 hover:bg-white/10 transition-colors flex justify-between items-center"
+                >
+                  Enterprise
+                  {workspace === 'Enterprise' && <div className="w-1.5 h-1.5 rounded-full bg-white/70"></div>}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
