@@ -97,24 +97,24 @@ export default function Auth() {
                 <div className="px-3 py-2 text-xs font-semibold text-white/40 uppercase tracking-wider">Select Environment</div>
                 <button 
                   onClick={() => { setWorkspace('Swarm Lite'); setIsWorkspaceOpen(false) }}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors flex justify-between items-center ${workspace === 'Swarm Lite' ? 'text-orange-400 font-semibold' : 'text-white'}`}
                 >
                   Swarm Lite
-                  {workspace === 'Swarm Lite' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                  {workspace === 'Swarm Lite' && <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>}
                 </button>
                 <button 
                   onClick={() => { setWorkspace('Swarm Ultra'); setIsWorkspaceOpen(false) }}
-                  className="w-full text-left px-4 py-2 text-sm text-orange-400 hover:bg-white/10 transition-colors flex justify-between items-center"
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors flex justify-between items-center ${workspace === 'Swarm Ultra' ? 'text-orange-400 font-semibold' : 'text-white'}`}
                 >
                   Swarm Ultra
                   {workspace === 'Swarm Ultra' && <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>}
                 </button>
                 <button 
                   onClick={() => { setWorkspace('Enterprise'); setIsWorkspaceOpen(false) }}
-                  className="w-full text-left px-4 py-2 text-sm text-white/70 hover:bg-white/10 transition-colors flex justify-between items-center"
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors flex justify-between items-center ${workspace === 'Enterprise' ? 'text-orange-400 font-semibold' : 'text-white'}`}
                 >
                   Enterprise
-                  {workspace === 'Enterprise' && <div className="w-1.5 h-1.5 rounded-full bg-white/70"></div>}
+                  {workspace === 'Enterprise' && <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>}
                 </button>
               </motion.div>
             )}
