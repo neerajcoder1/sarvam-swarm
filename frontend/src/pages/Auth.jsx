@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import SwarmLogo from '../components/SwarmLogo'
+import LegalModal from '../components/LegalModal'
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({ username: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [legalConfig, setLegalConfig] = useState({ isOpen: false, type: 'terms' })
   const navigate = useNavigate()
 
   const handleToggle = () => {
@@ -93,7 +95,7 @@ export default function Auth() {
           </h1>
 
           <p className="text-[11px] text-white/40 text-center mb-8 max-w-[300px] leading-relaxed">
-            By continuing, you agree to Swarm's <span className="underline cursor-pointer hover:text-white/60">Terms of Service</span>, <span className="underline cursor-pointer hover:text-white/60">Privacy Policy</span>, and <span className="underline cursor-pointer hover:text-white/60">Cookie Policy</span>.
+            By continuing, you agree to Swarm's <span onClick={() => setLegalConfig({isOpen: true, type: 'terms'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Terms of Service</span>, <span onClick={() => setLegalConfig({isOpen: true, type: 'privacy'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Privacy Policy</span>, and <span onClick={() => setLegalConfig({isOpen: true, type: 'cookies'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Cookie Policy</span>.
           </p>
 
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
@@ -174,6 +176,11 @@ export default function Auth() {
           </button>
         </motion.div>
       </div>
+      <LegalModal 
+        isOpen={legalConfig.isOpen} 
+        type={legalConfig.type} 
+        onClose={() => setLegalConfig({...legalConfig, isOpen: false})} 
+      />
     </div>
   )
 }
