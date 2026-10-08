@@ -38,9 +38,9 @@ export default function ProfileMenu({ userEmail, firstName }) {
               </p>
             </div>
 
-            {/* Account Switcher Mock */}
-            <div className="py-2 border-b border-[var(--line)]">
-              <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors">
+            {/* Active Account */}
+            <div className="py-1 border-b border-[var(--line)]">
+              <div className="w-full flex items-center justify-between px-4 py-2">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[var(--surface-hover)] border border-[var(--line)] flex items-center justify-center flex-shrink-0">
                     <User size={12} className="text-[var(--text-muted)]" />
@@ -48,16 +48,7 @@ export default function ProfileMenu({ userEmail, firstName }) {
                   <span className="text-[13px] font-medium text-[var(--text)]">{firstName || 'User'}</span>
                 </div>
                 <Check size={13} className="text-[var(--text)]" />
-              </button>
-              
-              <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-white/10 text-[var(--text-muted)] flex items-center justify-center text-xs font-bold">
-                    N
-                  </div>
-                  <span className="text-sm font-medium text-[var(--text-muted)]">Neeraj</span>
-                </div>
-              </button>
+              </div>
             </div>
 
             {/* Menu Links */}
