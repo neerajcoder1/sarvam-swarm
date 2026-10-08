@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 
 # Google API Scopes
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-REDIRECT_URI = "http://127.0.0.1:8000/api/calendar/callback"
+REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://127.0.0.1:8000/api/calendar/callback")
 
 def get_google_flow():
     client_id = os.getenv("GOOGLE_CLIENT_ID")
