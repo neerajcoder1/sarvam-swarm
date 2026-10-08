@@ -117,6 +117,19 @@ export default function Sidebar({
           </div>
         </div>
 
+        {/* New Chat Button */}
+        {!isCollapsed && (
+          <div className="px-3 pb-2 pt-2">
+            <button
+              onClick={() => { if (onNewConversation) onNewConversation() }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 bg-[var(--surface-hover)] border border-[var(--line)] rounded-xl hover:bg-[var(--line)] transition-colors text-[var(--text)] font-medium text-[13px]"
+            >
+              <Plus size={16} />
+              <span>New conversation</span>
+            </button>
+          </div>
+        )}
+
                   {/* Quick Actions Section */}
           <div className="sidebar-section">
             <span className="sidebar-section-title">Quick Actions</span>
@@ -191,39 +204,19 @@ export default function Sidebar({
         </div>
 
         {/* Bottom: Theme Toggle + New Conversation Button */}
-        <div className="sidebar-bottom-controls flex-col gap-2">
-          <button
-            type="button"
-            className="sidebar-item-btn w-full bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 justify-start font-medium"
-            onClick={() => setIsMobileModalOpen(true)}
-          >
-            <Smartphone size={16} />
-            <span>Get Mobile App</span></button><button type="button" className="sidebar-item-btn w-full hover:bg-[var(--surface-hover)] justify-start font-medium mt-2" onClick={() => navigate("/about")}><HelpCircle size={16} /><span>About & Help</span>
-          </button>
-
-          <div className="flex flex-row items-center justify-between w-full mt-1">
+        <div className="mt-auto px-2 pb-4 flex flex-col gap-1 w-full">
             <button
               type="button"
-              className="new-conversation-btn"
-              onClick={() => {
-                
-                if (onNewConversation) onNewConversation()
-              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--surface-hover)] transition-colors text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
+              onClick={() => setIsMobileModalOpen(true)}
             >
-              <Plus size={16} />
-              <span>New conversation</span>
+              <Smartphone size={16} />
+              <span>Get Mobile App</span>
             </button>
-
             
-
-            <div className="sidebar-theme-wrapper">
-              <ThemeToggle />
-            </div>
-
             <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} />
           </div>
-        </div>
-      </aside>
+        </aside>
 
       <MobileAppModal 
         isOpen={isMobileModalOpen} 
