@@ -3,7 +3,7 @@ import {
   Calendar,
   Clock,
   Bell,
-  PlusCircle,
+  Zap,
   MessageSquare,
   Plus, LogOut, Info, HelpCircle,
   ChevronLeft,
@@ -20,7 +20,7 @@ const QUICK_ACTIONS = [
   { id: 'plan', label: 'Plan my day', icon: Calendar, prompt: 'Plan my day' },
   { id: 'schedule', label: 'Check schedule', icon: Clock, prompt: "What's my schedule today?" },
   { id: 'reminders', label: 'Set reminders', icon: Bell, prompt: 'Set reminders for today' },
-  { id: 'new-chat', label: 'Start new chat', icon: PlusCircle, prompt: '' }
+  { id: 'new-chat', label: 'Start new chat', icon: Zap, prompt: '' }
 ]
 
 const INITIAL_CHAT_HISTORY = [
