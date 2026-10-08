@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Heart, Flame, Crown, ChevronDown, Check, X } from 'lucide-react'
@@ -19,7 +20,6 @@ const QUICK_SUGGESTIONS = [
   "Tell me about my tasks"
 ]
 
-import { useNavigate } from 'react-router-dom'
 export default function Dashboard() {
   const navigate = useNavigate()
   const [view, setView] = useState(() => {
