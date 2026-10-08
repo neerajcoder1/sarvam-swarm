@@ -683,8 +683,7 @@ export default function Dashboard() {
                 </div>
               </motion.div>
             </motion.div>
-          </motion.div>
-        ) : view === 'loading' ? (
+          ) : view === 'loading' ? (
           <motion.div
             key="loading-view"
             className="loading-overlay-container"
