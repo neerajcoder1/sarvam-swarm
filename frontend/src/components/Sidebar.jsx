@@ -70,7 +70,7 @@ export default function Sidebar({
       <aside className={`permanent-sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
 
         {/* ── Top bar: Logo + name + collapse btn ── */}
-        <div className="sidebar-top-profile">
+        <div className="sidebar-top-profile cursor-pointer hover:opacity-85 transition-opacity" onClick={() => { if (onNewConversation) onNewConversation() }} title="Swarm Home">
           <div className="profile-avatar-circle flex items-center justify-center">
             <SwarmLogo size={20} className="text-[var(--text)]" />
           </div>

@@ -513,7 +513,11 @@ export default function Dashboard() {
 
                 {/* Desktop Hero Title with Big Swarm Logo */}
                 <div className="hidden lg:flex flex-col items-center text-center mb-6">
-                  <div className="flex items-center justify-center gap-4 mb-2">
+                  <div 
+                    className="flex items-center justify-center gap-4 mb-2 cursor-pointer hover:opacity-85 transition-opacity"
+                    onClick={handleBackToHome}
+                    title="Reset to Swarm Home"
+                  >
                     <SwarmLogo size={52} className="text-white" />
                     <h1 className="text-4xl font-extrabold tracking-tight text-white font-sans">Sarvam Swarm</h1>
                   </div>

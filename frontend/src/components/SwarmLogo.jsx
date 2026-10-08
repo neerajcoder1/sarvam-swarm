@@ -1,4 +1,4 @@
-export default function SwarmLogo({ size = 48, className = '' }) {
+export default function SwarmLogo({ size = 48, className = '', onClick }) {
   return (
     <svg
       width={size}
@@ -6,7 +6,8 @@ export default function SwarmLogo({ size = 48, className = '' }) {
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`swarm-logo-mark ${className}`}
+      onClick={onClick}
+      className={`swarm-logo-mark ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${className}`}
       style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
     >
       <path
