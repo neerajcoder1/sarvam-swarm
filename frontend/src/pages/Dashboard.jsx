@@ -453,206 +453,235 @@ export default function Dashboard() {
             </motion.div>
           ) : view === 'homepage' ? (
             <motion.div
-              key="homepage-view"
-              className="homepage-container"
+              className="homepage-container flex flex-col justify-between items-center min-h-[calc(100vh-60px)] py-6 px-4"
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="absolute top-4 left-4 lg:hidden">
+              {/* Top Navigation Bar on Homepage */}
+              <div className="w-full flex items-center justify-between px-2 pt-1 max-w-2xl">
                 <button
                   type="button"
-                  className="mobile-menu-trigger"
+                  className="p-2 rounded-xl bg-[#18181b] border border-[#27272a] text-white hover:bg-[#27272a] transition-colors cursor-pointer"
                   onClick={() => setSidebarOpen(true)}
                   aria-label="Open sidebar"
                 >
-                  <Menu size={18} />
+                  <Menu size={20} />
                 </button>
-              </div>
 
-            <motion.div
-              className="input-container-centered"
-              initial={{ y: 0, opacity: 1 }}
-              exit={{ y: 350, opacity: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
-            >
-              {/* Large Centered Title with Swarm Logo */}
-              <div className="homepage-hero-group">
-                <div className="homepage-hero-title-row">
-                  <SwarmLogo size={56} className="homepage-hero-logo" />
-                  <h1 className="homepage-hero-title">Sarvam Swarm</h1>
-                </div>
-                <p className="homepage-hero-subtitle">— Autonomous Personalized Life Co-Pilot</p>
-              </div>
-
-              {/* Quick Suggestions Bar */}
-              <div className="suggestions-container">
-                <span className="suggestions-title">Try these commands</span>
-                <div className="suggestions-list">
-                  {QUICK_SUGGESTIONS.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      className="suggestion-button"
-                      onClick={() => {
-                        setInput(suggestion)
-                        handleStartSwarm(suggestion)
-                      }}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#18181b] border border-[#27272a] flex items-center justify-center text-white">
+                    <SwarmLogo size={20} />
+                  </div>
                 </div>
               </div>
 
-              {/* Grok-style Input Card Container */}
-              <div className="w-full max-w-[560px] mx-auto">
-                <div className="grok-input-card relative w-full bg-[#16171a] border border-[#2a2b32] rounded-[24px] p-3.5 sm:p-4 shadow-2xl flex flex-col gap-3 transition-all focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--accent-ring)]">
-                  
-                  {/* Top: Input Text Area / Field */}
-                  <input
-                    type="text"
-                    className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg placeholder-[#60616b] px-1 font-sans focus:outline-none focus:ring-0"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="What do you want to know?"
-                    onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
-                    disabled={isListening}
-                  />
+              <motion.div
+                className="w-full max-w-2xl flex flex-col items-center gap-6 my-auto"
+                initial={{ y: 0, opacity: 1 }}
+                exit={{ y: 350, opacity: 0 }}
+                transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
+              >
+                {/* Large Grok-Style Hero Title */}
+                <div className="text-center space-y-2 mt-4 mb-2">
+                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+                    What should we explore?
+                  </h1>
+                  <p className="text-sm text-[#8e8f9a]">
+                    Autonomous Personalized Life Co-Pilot
+                  </p>
+                </div>
 
-                  {/* Hidden File Upload input */}
-                  <input 
-                    type="file" 
-                    id="file-upload" 
-                    className="hidden" 
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setInput(input + ` [Attached: ${e.target.files[0].name}] `)
-                      }
-                    }}
-                  />
-
-                  {/* Bottom Toolbar Row */}
-                  <div className="flex items-center justify-between pt-1">
-                    {/* Left: Plus Attachment Button */}
-                    <button
-                      type="button"
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-[#8e8f99] hover:text-white hover:bg-[#25262c] transition-colors cursor-pointer"
-                      onClick={() => {
-                        const el = document.getElementById('file-upload')
-                        if (el) el.click()
-                      }}
-                      title="Attach file"
-                    >
-                      <Plus size={20} />
-                    </button>
-
-                    {/* Right: Model Pill + Mic + Circular Send Button */}
-                    <div className="flex items-center gap-2">
-                      {/* Mode Selector Dropdown */}
-                      <div className="relative">
-                        <button 
-                          type="button"
-                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#202126] hover:bg-[#2a2b32] border border-[#30313a] transition-all text-xs sm:text-sm font-medium text-white whitespace-nowrap cursor-pointer"
-                        >
-                          {swarmMode === 'Lightning' && <Zap size={13} className="text-yellow-500" />}
-                          {swarmMode === 'Deep Swarm' && <Brain size={13} className="text-blue-400" />}
-                          {swarmMode === 'Wellness Mode' && <Heart size={13} className="text-pink-400" />}
-                          {swarmMode === 'Hustle Mode' && <Flame size={13} className="text-orange-400" />}
-                          <span className="whitespace-nowrap">{swarmMode}</span>
-                          <ChevronDown size={13} className="opacity-60 ml-0.5" />
-                        </button>
-                        
-                        {isDropdownOpen && (
-                          <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
-                            <div className="p-2 flex justify-between items-center">
-                              <span className="text-xs font-semibold text-[var(--text-muted)] pl-2 uppercase tracking-wider">Swarm Mode</span>
-                              <button 
-                                onClick={() => setIsDropdownOpen(false)} 
-                                className="p-1 hover:bg-[#2c2d33] rounded-md transition-colors text-[var(--text-muted)] hover:text-white"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                            <div className="p-2 flex flex-col gap-1 pt-0">
-                              <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Zap size={18} className="text-yellow-500" />
-                                <div>
-                                  <span className="font-semibold text-white block">Lightning</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Fast, instant answers</span>
-                                </div>
-                                {swarmMode === 'Lightning' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Brain size={18} className="text-blue-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Deep Swarm</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Full 5-agent pipeline</span>
-                                </div>
-                                {swarmMode === 'Deep Swarm' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Heart size={18} className="text-pink-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Wellness Mode</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Biometric-aware planning</span>
-                                </div>
-                                {swarmMode === 'Wellness Mode' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Flame size={18} className="text-orange-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Hustle Mode</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Max productivity, no breaks</span>
-                                </div>
-                                {swarmMode === 'Hustle Mode' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                            </div>
-                            <div className="p-2 border-t border-[#2c2d33] bg-[#222327]">
-                              <button onClick={() => navigate('/upgrade')} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <Crown size={14} className="text-yellow-400" />
-                                    <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
-                                  </div>
-                                  <span className="text-xs text-[var(--text-muted)]">Unlock extended capabilities</span>
-                                </div>
-                                <span className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">Upgrade</span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Mic Voice Button */}
+                {/* Quick Suggestions Pills */}
+                <div className="w-full overflow-x-auto no-scrollbar py-1">
+                  <div className="flex items-center justify-center gap-2 flex-wrap sm:flex-nowrap">
+                    {QUICK_SUGGESTIONS.map((suggestion) => (
                       <button
+                        key={suggestion}
                         type="button"
-                        className={`w-9 h-9 rounded-full flex items-center justify-center text-[#8e8f99] hover:text-white hover:bg-[#25262c] transition-colors cursor-pointer ${isListening ? 'text-[var(--accent)] animate-pulse' : ''}`}
-                        onClick={toggleListening}
-                        title={isListening ? 'Listening...' : 'Voice Input'}
+                        className="px-3.5 py-1.5 rounded-full bg-[#18181b] border border-[#27272a] text-xs font-medium text-[#a1a1aa] hover:text-white hover:border-[#3f3f46] hover:bg-[#27272a] transition-all whitespace-nowrap cursor-pointer"
+                        onClick={() => {
+                          setInput(suggestion)
+                          handleStartSwarm(suggestion)
+                        }}
                       >
-                        <Mic size={18} />
+                        {suggestion}
                       </button>
-
-                      {/* Grok-style Filled Circular Send Button */}
-                      <button
-                        type="button"
-                        className="w-9 h-9 rounded-full bg-[#3b82f6] hover:bg-[#2563eb] text-white flex items-center justify-center transition-all transform active:scale-95 cursor-pointer shadow-md"
-                        onClick={() => handleStartSwarm()}
-                        title="Send Request"
-                      >
-                        <ArrowUp size={18} strokeWidth={2.5} />
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Grok-style disclaimer note */}
-                <p className="mt-2.5 text-center text-[11px] text-[#71717a]">
-                  By messaging SwarmAssist, you agree to our <span className="underline cursor-pointer hover:text-white">Terms</span> and <span className="underline cursor-pointer hover:text-white">Privacy Policy</span>.
-                </p>
-              </div>
+                {/* Grok-Style Floating Upgrade Banner */}
+                <div className="w-full bg-gradient-to-r from-[#121318] via-[#1a1c24] to-[#121318] border border-[#2a2c36] rounded-2xl p-4 flex items-center justify-between shadow-lg relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent pointer-events-none" />
+                  <div className="space-y-0.5 z-10">
+                    <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
+                      <span>SuperSwarm</span>
+                      <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">PRO</span>
+                    </h3>
+                    <p className="text-xs text-[#9496a1]">Unlock extended multi-agent capabilities</p>
+                  </div>
+                  <button 
+                    onClick={() => navigate('/upgrade')}
+                    className="z-10 bg-white text-black font-semibold text-xs px-4 py-2 rounded-full hover:bg-gray-100 transition-all cursor-pointer shadow-md active:scale-95 whitespace-nowrap"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+
+                {/* Grok-Style Input Card */}
+                <div className="w-full">
+                  <div className="grok-input-card relative w-full bg-[#18181b] border border-[#27272a] rounded-[28px] p-4 shadow-2xl flex flex-col gap-4 transition-all focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--accent-ring)]">
+                    
+                    {/* Top: Text Area / Field */}
+                    <input
+                      type="text"
+                      className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg placeholder-[#6e6f7a] px-1 font-sans focus:outline-none focus:ring-0"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Type / or ask anything..."
+                      onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
+                      disabled={isListening}
+                    />
+
+                    {/* Hidden File Upload */}
+                    <input 
+                      type="file" 
+                      id="file-upload" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setInput(input + ` [Attached: ${e.target.files[0].name}] `)
+                        }
+                      }}
+                    />
+
+                    {/* Bottom Toolbar Row */}
+                    <div className="flex items-center justify-between pt-1">
+                      {/* Left: Plus Attachment Button */}
+                      <button
+                        type="button"
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-[#8e8f9a] hover:text-white hover:bg-[#27272a] transition-colors cursor-pointer"
+                        onClick={() => {
+                          const el = document.getElementById('file-upload')
+                          if (el) el.click()
+                        }}
+                        title="Attach file"
+                      >
+                        <Plus size={20} />
+                      </button>
+
+                      {/* Right Controls */}
+                      <div className="flex items-center gap-2">
+                        {/* Mode Selector Dropdown */}
+                        <div className="relative">
+                          <button 
+                            type="button"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#27272a] hover:bg-[#3f3f46] transition-all text-xs font-semibold text-white whitespace-nowrap cursor-pointer border border-[#3f3f46]"
+                          >
+                            {swarmMode === 'Lightning' && <Zap size={13} className="text-yellow-400" />}
+                            {swarmMode === 'Deep Swarm' && <Brain size={13} className="text-blue-400" />}
+                            {swarmMode === 'Wellness Mode' && <Heart size={13} className="text-pink-400" />}
+                            {swarmMode === 'Hustle Mode' && <Flame size={13} className="text-orange-400" />}
+                            <span className="whitespace-nowrap">{swarmMode}</span>
+                            <ChevronDown size={13} className="opacity-60 ml-0.5" />
+                          </button>
+                          
+                          {isDropdownOpen && (
+                            <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
+                              <div className="p-2 flex justify-between items-center">
+                                <span className="text-xs font-semibold text-[var(--text-muted)] pl-2 uppercase tracking-wider">Swarm Mode</span>
+                                <button 
+                                  onClick={() => setIsDropdownOpen(false)} 
+                                  className="p-1 hover:bg-[#2c2d33] rounded-md transition-colors text-[var(--text-muted)] hover:text-white"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                              <div className="p-2 flex flex-col gap-1 pt-0">
+                                <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                                  <Zap size={18} className="text-yellow-500" />
+                                  <div>
+                                    <span className="font-semibold text-white block">Lightning</span>
+                                    <span className="text-[11px] text-[var(--text-muted)]">Fast, instant answers</span>
+                                  </div>
+                                  {swarmMode === 'Lightning' && <Check size={16} className="absolute right-4 text-white" />}
+                                </button>
+                                <button onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                                  <Brain size={18} className="text-blue-400" />
+                                  <div>
+                                    <span className="font-semibold text-white block">Deep Swarm</span>
+                                    <span className="text-[11px] text-[var(--text-muted)]">Full 5-agent pipeline</span>
+                                  </div>
+                                  {swarmMode === 'Deep Swarm' && <Check size={16} className="absolute right-4 text-white" />}
+                                </button>
+                                <button onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                                  <Heart size={18} className="text-pink-400" />
+                                  <div>
+                                    <span className="font-semibold text-white block">Wellness Mode</span>
+                                    <span className="text-[11px] text-[var(--text-muted)]">Biometric-aware planning</span>
+                                  </div>
+                                  {swarmMode === 'Wellness Mode' && <Check size={16} className="absolute right-4 text-white" />}
+                                </button>
+                                <button onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                                  <Flame size={18} className="text-orange-400" />
+                                  <div>
+                                    <span className="font-semibold text-white block">Hustle Mode</span>
+                                    <span className="text-[11px] text-[var(--text-muted)]">Max productivity, no breaks</span>
+                                  </div>
+                                  {swarmMode === 'Hustle Mode' && <Check size={16} className="absolute right-4 text-white" />}
+                                </button>
+                              </div>
+                              <div className="p-2 border-t border-[#2c2d33] bg-[#222327]">
+                                <button onClick={() => navigate('/upgrade')} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <Crown size={14} className="text-yellow-400" />
+                                      <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
+                                    </div>
+                                    <span className="text-xs text-[var(--text-muted)]">Unlock extended capabilities</span>
+                                  </div>
+                                  <span className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">Upgrade</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Mic Voice Button */}
+                        <button
+                          type="button"
+                          className={`w-9 h-9 rounded-full flex items-center justify-center text-[#8e8f9a] hover:text-white hover:bg-[#27272a] transition-colors cursor-pointer ${isListening ? 'text-[var(--accent)] animate-pulse' : ''}`}
+                          onClick={toggleListening}
+                          title={isListening ? 'Listening...' : 'Voice Input'}
+                        >
+                          <Mic size={18} />
+                        </button>
+
+                        {/* Grok-style Voice Wave / Action Button */}
+                        <button
+                          type="button"
+                          className="px-3 py-1.5 rounded-full bg-[#1d4ed8] hover:bg-[#2563eb] text-white flex items-center gap-1.5 transition-all transform active:scale-95 cursor-pointer shadow-md text-xs font-bold"
+                          onClick={() => handleStartSwarm()}
+                          title="Send Request"
+                        >
+                          <div className="flex items-center gap-0.5 h-3">
+                            <span className="w-0.5 h-2.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-0.5 h-3.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-0.5 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Grok-style disclaimer note */}
+                  <p className="mt-3 text-center text-[11px] text-[#71717a]">
+                    By messaging SwarmAssist, you agree to our <span className="underline cursor-pointer hover:text-white">Terms</span> and <span className="underline cursor-pointer hover:text-white">Privacy Policy</span>.
+                  </p>
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         ) : view === 'loading' ? (
