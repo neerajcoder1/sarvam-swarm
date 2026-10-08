@@ -46,14 +46,23 @@ def get_google_flow():
 
 @router.get("/auth-url")
 def get_auth_url(current_user: models.User = Depends(auth_router.get_current_user)):
-    flow = get_google_flow()
-    # Pass user.id in state so callback knows who authenticated
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true',
-        prompt='consent',
-        state=str(current_user.id)
-    )
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    
+    # Generate the OAuth URL manually to completely avoid the PKCE bug in google's library
+    import urllib.parse
+    
+    params = {
+        "client_id": client_id,
+        "redirect_uri": REDIRECT_URI,
+        "response_type": "code",
+        "scope": "https://www.googleapis.com/auth/calendar",
+        "access_type": "offline",
+        "prompt": "consent",
+        "state": str(current_user.id)
+    }
+    
+    authorization_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
+    
     return {"url": authorization_url}
 
 @router.get("/callback")
