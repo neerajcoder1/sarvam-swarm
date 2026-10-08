@@ -774,9 +774,11 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <footer className="footer-text flex flex-col gap-1 items-center justify-center">
-        <span>© 2026 Sarvam Swarm Lite · Autonomous Personalized Life Co-Pilot</span>
-      </footer>
+            {view !== 'splash' && (
+        <footer className="flex flex-col gap-1 items-center justify-center py-4 w-full z-10">
+          <span className="text-[11px] text-[var(--text-muted)] tracking-wide font-medium">© 2026 Sarvam Swarm Lite · Autonomous Personalized Life Co-Pilot</span>
+        </footer>
+      )}
       </div>
     </div>
   )
