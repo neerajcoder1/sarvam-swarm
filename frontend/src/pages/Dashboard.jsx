@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Heart, Flame, Crown, ChevronDown, Check, X, ArrowUp } from 'lucide-react'
+import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Rocket, Lightbulb, LayoutGrid, Heart, Flame, Crown, ChevronDown, Check, X, ArrowUp } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 import ThemeToggle from '../components/ThemeToggle'
 import SwarmLogo from '../components/SwarmLogo'
@@ -580,69 +580,74 @@ export default function Dashboard() {
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#27272a] hover:bg-[#3f3f46] transition-all text-xs font-semibold text-white whitespace-nowrap cursor-pointer border border-[#3f3f46]"
                         >
-                          {swarmMode === 'Lightning' && <Zap size={13} className="text-yellow-400" />}
-                          {swarmMode === 'Deep Swarm' && <Brain size={13} className="text-blue-400" />}
-                          {swarmMode === 'Wellness Mode' && <Heart size={13} className="text-pink-400" />}
-                          {swarmMode === 'Hustle Mode' && <Flame size={13} className="text-orange-400" />}
+                          {swarmMode === 'Lightning' && <Zap size={14} className="text-[#a1a1aa]" />}
+                          {swarmMode === 'Deep Swarm' && <Rocket size={14} className="text-[#a1a1aa]" />}
+                          {swarmMode === 'Wellness Mode' && <Lightbulb size={14} className="text-[#a1a1aa]" />}
+                          {swarmMode === 'Hustle Mode' && <LayoutGrid size={14} className="text-[#a1a1aa]" />}
                           <span className="whitespace-nowrap">{swarmMode}</span>
                           <ChevronDown size={13} className="opacity-60 ml-0.5" />
                         </button>
                         
                         {isDropdownOpen && (
-                          <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
-                            <div className="p-2 flex justify-between items-center">
-                              <span className="text-xs font-semibold text-[var(--text-muted)] pl-2 uppercase tracking-wider">Swarm Mode</span>
+                          <div className="absolute bottom-full right-0 mb-3 w-[260px] bg-[#18181b] border border-[#27272a] rounded-2xl shadow-2xl overflow-hidden z-50 text-left p-1.5">
+                            <div className="flex flex-col gap-0.5">
+                              {/* Fast / Lightning */}
                               <button 
-                                onClick={() => setIsDropdownOpen(false)} 
-                                className="p-1 hover:bg-[#2c2d33] rounded-md transition-colors text-[var(--text-muted)] hover:text-white"
+                                onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} 
+                                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#27272a] transition-colors w-full text-left cursor-pointer group"
                               >
-                                <X size={16} />
+                                <div className="flex items-center gap-3">
+                                  <Zap size={18} className="text-[#a1a1aa] group-hover:text-white transition-colors" />
+                                  <span className="font-medium text-white text-sm">Fast</span>
+                                </div>
+                                {swarmMode === 'Lightning' && <Check size={16} className="text-white" />}
+                              </button>
+
+                              {/* Auto / Deep Swarm */}
+                              <button 
+                                onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} 
+                                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#27272a] transition-colors w-full text-left cursor-pointer group"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Rocket size={18} className="text-[#a1a1aa] group-hover:text-white transition-colors" />
+                                  <span className="font-medium text-white text-sm">Auto</span>
+                                </div>
+                                {swarmMode === 'Deep Swarm' && <Check size={16} className="text-white" />}
+                              </button>
+
+                              {/* Expert / Wellness Mode */}
+                              <button 
+                                onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} 
+                                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#27272a] transition-colors w-full text-left cursor-pointer group"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Lightbulb size={18} className="text-[#a1a1aa] group-hover:text-white transition-colors" />
+                                  <span className="font-medium text-white text-sm">Expert</span>
+                                </div>
+                                {swarmMode === 'Wellness Mode' && <Check size={16} className="text-white" />}
+                              </button>
+
+                              {/* Heavy / Hustle Mode */}
+                              <button 
+                                onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} 
+                                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#27272a] transition-colors w-full text-left cursor-pointer group"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <LayoutGrid size={18} className="text-[#a1a1aa] group-hover:text-white transition-colors" />
+                                  <span className="font-medium text-white text-sm">Heavy</span>
+                                </div>
+                                {swarmMode === 'Hustle Mode' && <Check size={16} className="text-white" />}
                               </button>
                             </div>
-                            <div className="p-2 flex flex-col gap-1 pt-0">
-                              <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Zap size={18} className="text-yellow-500" />
+
+                            {/* Grok Upgrade Promo Card in Dropdown */}
+                            <div className="mt-1.5 pt-1.5 border-t border-[#27272a]">
+                              <button onClick={() => { setIsDropdownOpen(false); navigate('/upgrade') }} className="flex items-center justify-between p-3 rounded-xl bg-[#202124] hover:bg-[#27272a] transition-colors w-full text-left cursor-pointer">
                                 <div>
-                                  <span className="font-semibold text-white block">Lightning</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Fast, instant answers</span>
+                                  <span className="font-bold text-white text-sm block">SuperSwarm</span>
+                                  <span className="text-[11px] text-[#9496a1]">Unlock extended capabilities</span>
                                 </div>
-                                {swarmMode === 'Lightning' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Brain size={18} className="text-blue-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Deep Swarm</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Full 5-agent pipeline</span>
-                                </div>
-                                {swarmMode === 'Deep Swarm' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Heart size={18} className="text-pink-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Wellness Mode</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Biometric-aware planning</span>
-                                </div>
-                                {swarmMode === 'Wellness Mode' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                              <button onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                                <Flame size={18} className="text-orange-400" />
-                                <div>
-                                  <span className="font-semibold text-white block">Hustle Mode</span>
-                                  <span className="text-[11px] text-[var(--text-muted)]">Max productivity, no breaks</span>
-                                </div>
-                                {swarmMode === 'Hustle Mode' && <Check size={16} className="absolute right-4 text-white" />}
-                              </button>
-                            </div>
-                            <div className="p-2 border-t border-[#2c2d33] bg-[#222327]">
-                              <button onClick={() => navigate('/upgrade')} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <Crown size={14} className="text-yellow-400" />
-                                    <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
-                                  </div>
-                                  <span className="text-xs text-[var(--text-muted)]">Unlock extended capabilities</span>
-                                </div>
-                                <span className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">Upgrade</span>
+                                <span className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">Sign in</span>
                               </button>
                             </div>
                           </div>
