@@ -86,7 +86,7 @@ def google_callback(state: str, code: str, request: Request, db: Session = Depen
     db.commit()
     
     # Redirect back to the frontend dashboard
-    return RedirectResponse("http://localhost:5173/?calendar_connected=true")
+    return RedirectResponse(os.getenv("FRONTEND_URL", "http://localhost:5173") + "/?calendar_connected=true")
 
 @router.get("/events")
 def get_events(current_user: models.User = Depends(auth_router.get_current_user), db: Session = Depends(get_db)):
