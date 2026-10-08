@@ -173,12 +173,19 @@ def sync_events(tasks: list[dict], current_user: models.User = Depends(auth_rout
                 'description': task.get("description", ""),
                 'start': {
                     'dateTime': start_dt.isoformat(),
-                    'timeZone': 'UTC', # Should use user's timezone if possible, default to UTC for now
+                    'timeZone': 'UTC',
                 },
                 'end': {
                     'dateTime': end_dt.isoformat(),
                     'timeZone': 'UTC',
                 },
+                'reminders': {
+                    'useDefault': False,
+                    'overrides': [
+                        {'method': 'email', 'minutes': 10},
+                        {'method': 'popup', 'minutes': 10},
+                    ],
+                }
             }
             
             event_result = service.events().insert(calendarId='primary', body=event).execute()

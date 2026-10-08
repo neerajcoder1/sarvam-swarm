@@ -114,7 +114,7 @@ export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration =
           style={{ marginTop: '0.5rem', background: syncDone ? '#16a34a' : 'var(--accent)' }}
         >
           <CalendarCheck size={16} color="white" />
-          <span style={{ color: 'white' }}>{isSyncing ? 'Syncing...' : syncDone ? 'Synced to Google Calendar!' : 'Push to Google Calendar'}</span>
+          <span style={{ color: 'white' }}>{isSyncing ? 'Syncing...' : syncDone ? 'Synced! Notifications sent to phone & email'  : 'Push to Google Calendar'}</span>
         </button>
 
 
