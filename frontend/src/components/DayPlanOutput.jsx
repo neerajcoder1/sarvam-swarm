@@ -108,7 +108,7 @@ export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration =
 
         <button
           type="button"
-          className={speak-plan-btn  text-white transition-all}
+          className="speak-plan-btn text-white transition-all"
           onClick={handleCalendarSync}
           disabled={isSyncing || syncDone}
           style={{ marginTop: '0.5rem', background: syncDone ? '#16a34a' : 'var(--accent)' }}
