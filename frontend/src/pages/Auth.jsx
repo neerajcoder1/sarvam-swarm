@@ -137,19 +137,20 @@ export default function Auth() {
             By continuing, you agree to Swarm's <span onClick={() => setLegalConfig({isOpen: true, type: 'terms'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Terms of Service</span>, <span onClick={() => setLegalConfig({isOpen: true, type: 'privacy'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Privacy Policy</span>, and <span onClick={() => setLegalConfig({isOpen: true, type: 'cookies'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Cookie Policy</span>.
           </p>
 
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
-            <AnimatePresence mode="popLayout">
+          <form onSubmit={handleSubmit} className="w-full flex flex-col">
+            <AnimatePresence>
               {!isLogin && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="w-full"
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="w-full overflow-hidden"
                 >
                   <input
                     type="text"
                     placeholder="Username"
-                    className="w-full px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
+                    className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
                     value={formData.username}
                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                     required={!isLogin}
@@ -161,7 +162,7 @@ export default function Auth() {
             <input
               type="email"
               placeholder="Email address"
-              className="w-full px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
+              className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
               required
@@ -170,7 +171,7 @@ export default function Auth() {
             <input
               type="password"
               placeholder="Password"
-              className="w-full px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
+              className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               required
