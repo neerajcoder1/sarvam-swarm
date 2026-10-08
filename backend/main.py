@@ -1033,10 +1033,7 @@ async def process_swarm_query(request: SwarmRequest):
 async def generate_tts(request: TTSRequest):
     try:
         audio_base64 = voice_service.generate_audio_base64(request.text, request.language)
-        if audio_base64:
-            return {"audio_base64": audio_base64}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to generate audio")
+        return {"audio_base64": audio_base64 if audio_base64 else ""}
     except Exception as e:
         logger.error(f"TTS Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
