@@ -488,8 +488,8 @@ export default function Dashboard() {
 
                 <div 
                   className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={handleBackToHome}
-                  title="Return to Swarm Home"
+                  onClick={() => navigate('/about')}
+                  title="About SwarmAssist System"
                 >
                   <div className="w-9 h-9 rounded-full bg-[#18181b] border border-[#27272a] flex items-center justify-center text-white">
                     <SwarmLogo size={20} />
@@ -515,8 +515,8 @@ export default function Dashboard() {
                 <div className="hidden lg:flex flex-col items-center text-center mb-6">
                   <div 
                     className="flex items-center justify-center gap-4 mb-2 cursor-pointer hover:opacity-85 transition-opacity"
-                    onClick={handleBackToHome}
-                    title="Reset to Swarm Home"
+                    onClick={() => navigate('/about')}
+                    title="About SwarmAssist System"
                   >
                     <SwarmLogo size={52} className="text-white" />
                     <h1 className="text-4xl font-extrabold tracking-tight text-white font-sans">Sarvam Swarm</h1>
@@ -775,7 +775,7 @@ export default function Dashboard() {
           >
             {/* Header */}
             <header className="dashboard-header">
-              <div className="logo-group cursor-pointer hover:opacity-80 transition-opacity" onClick={handleBackToHome} title="Return to Swarm Home">
+              <div className="logo-group cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/about')} title="About SwarmAssist System">
                 <button
                   type="button"
                   className="mobile-menu-trigger mr-1 lg:hidden"
