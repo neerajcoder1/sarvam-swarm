@@ -214,7 +214,7 @@ export default function Sidebar({
               onClick={() => {
                 localStorage.removeItem('swarm_token')
                 localStorage.removeItem('swarm_email')
-                window.location.href = '/auth'
+                window.location.href = '/'
               }}
               className="text-[var(--text-muted)] hover:text-red-500 transition-colors p-2"
               title="Sign Out"
