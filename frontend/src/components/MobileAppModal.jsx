@@ -3,7 +3,7 @@ import { X, Smartphone, QrCode } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function MobileAppModal({ isOpen, onClose }) {
+export default function MobileAppModal({ isOpen, onClose, onToast }) {
   if (!isOpen) return null
 
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -55,7 +55,10 @@ export default function MobileAppModal({ isOpen, onClose }) {
 
             <button 
               className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-3 rounded-xl transition-colors text-sm font-semibold"
-              onClick={() => alert("The native App Store release is coming in Phase 3 of the SaaS roadmap!")}
+              onClick={() => {
+              if (onToast) onToast("✨ The native App Store release is coming in Phase 3!");
+              onClose();
+            }}
             >
               <Smartphone size={16} className="text-white/50" />
               Download for iOS & Android

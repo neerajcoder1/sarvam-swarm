@@ -33,6 +33,7 @@ const INITIAL_CHAT_HISTORY = [
 export default function Sidebar({
   onSelectAction,
   onNewConversation,
+  onToast,
   isOpen,
   onToggleOpen,
   isCollapsed,
@@ -234,6 +235,7 @@ export default function Sidebar({
       <MobileAppModal 
         isOpen={isMobileModalOpen} 
         onClose={() => setIsMobileModalOpen(false)} 
+        onToast={onToast}
       />
     </>
   )

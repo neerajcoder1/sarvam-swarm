@@ -413,7 +413,8 @@ export default function Dashboard() {
               handleStartSwarm(promptText)
             }
           }}
-          onNewConversation={() => {
+          onToast={triggerToast}
+            onNewConversation={() => {
             handleBackToHome()
             setSidebarOpen(false)
             triggerToast("Started a new conversation ✨")
