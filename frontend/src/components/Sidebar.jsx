@@ -20,7 +20,7 @@ const QUICK_ACTIONS = [
   { id: 'plan', label: 'Plan my day', icon: Calendar, prompt: 'Plan my day' },
   { id: 'schedule', label: 'Check schedule', icon: Clock, prompt: "What's my schedule today?" },
   { id: 'reminders', label: 'Set reminders', icon: Bell, prompt: 'Set reminders for today' },
-  { id: 'new-chat', label: 'Start new chat', icon: Zap, prompt: '' }
+  { id: 'focus', label: 'Deep Focus Block', icon: Zap, prompt: 'Schedule a 2 hour deep focus block' }
 ]
 
 const INITIAL_CHAT_HISTORY = [
@@ -145,9 +145,7 @@ export default function Sidebar({
                   type="button"
                   className="sidebar-item-btn"
                   onClick={() => {
-                    if (action.id === 'new-chat') {
-                      if (onNewConversation) onNewConversation()
-                    } else if (onSelectAction) {
+                    if (onSelectAction) {
                       onSelectAction(action.prompt)
                     }
                   }}
