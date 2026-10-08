@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
 import SwarmLogo from './SwarmLogo'
 import MobileAppModal from './MobileAppModal'
+import ProfileMenu from './ProfileMenu'
 
 const QUICK_ACTIONS = [
   { id: 'plan', label: 'Plan my day', icon: Calendar, prompt: 'Plan my day' },
@@ -210,21 +211,13 @@ export default function Sidebar({
               <span>New conversation</span>
             </button>
 
-            <button
-              onClick={() => {
-                localStorage.removeItem('swarm_token')
-                localStorage.removeItem('swarm_email')
-                window.location.href = '/'
-              }}
-              className="text-[var(--text-muted)] hover:text-red-500 transition-colors p-2"
-              title="Sign Out"
-            >
-              <LogOut size={16} />
-            </button>
+            
 
             <div className="sidebar-theme-wrapper">
               <ThemeToggle />
             </div>
+
+            <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} />
           </div>
         </div>
       </aside>
