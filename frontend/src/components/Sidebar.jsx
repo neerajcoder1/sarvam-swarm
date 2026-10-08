@@ -3,16 +3,15 @@ import {
   Calendar,
   Clock,
   Bell,
-  Zap,
   MessageSquare,
-  Plus, LogOut, Info, HelpCircle,
+  Plus,
   ChevronLeft,
   ChevronRight,
   X,
-  Smartphone
+  Smartphone,
+  User
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import ThemeToggle from './ThemeToggle'
 import SwarmLogo from './SwarmLogo'
 import MobileAppModal from './MobileAppModal'
 import ProfileMenu from './ProfileMenu'
@@ -23,15 +22,7 @@ const QUICK_ACTIONS = [
   { id: 'reminders', label: 'Set reminders', icon: Bell, prompt: 'Set reminders for today' }
 ]
 
-const INITIAL_CHAT_HISTORY = [
-  { id: '1', title: "Today's priority schedule & break", time: '2h ago', active: true },
-  { id: '2', title: 'Healthy lunch recommendations', time: 'Yesterday' },
-  { id: '3', title: 'Morning walk & workout routine', time: 'Jul 20' },
-  { id: '4', title: 'Evening call reminder', time: 'Jul 18' }
-]
-
 export default function Sidebar({
-
   onSelectAction,
   onNewConversation,
   onToast,
@@ -45,7 +36,7 @@ export default function Sidebar({
 }) {
   const username = localStorage.getItem('swarm_username') || 'User'
   const firstName = username.split(' ')[0]
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
 
   const handleSelectHistory = (id, title) => {
@@ -60,11 +51,7 @@ export default function Sidebar({
     <>
       {/* Mobile Sidebar Backdrop */}
       {isOpen && (
-        <div
-          className="sidebar-backdrop"
-          onClick={onToggleOpen}
-          aria-hidden="true"
-        />
+        <div className="sidebar-backdrop" onClick={onToggleOpen} aria-hidden="true" />
       )}
 
       {/* Floating Expand Arrow Button (when collapsed) */}
@@ -81,20 +68,17 @@ export default function Sidebar({
       )}
 
       <aside className={`permanent-sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
-        {/* Top: Profile Avatar + Title + Slide Arrow */}
+
+        {/* ── Top bar: Logo + name + collapse btn ── */}
         <div className="sidebar-top-profile">
           <div className="profile-avatar-circle flex items-center justify-center">
             <SwarmLogo size={20} className="text-[var(--text)]" />
           </div>
-                    <div className="profile-brand-info">
-            <span className="profile-brand-title font-semibold text-lg tracking-tight text-[var(--text)]">
-              {(() => {
-                const uname = localStorage.getItem('swarm_username');
-                return (!uname || uname === 'null' || uname === 'undefined') ? 'Swarm User' : uname;
-              })()}
+          <div className="profile-brand-info">
+            <span className="profile-brand-title font-semibold text-[15px] tracking-tight text-[var(--text)]">
+              {(!username || username === 'null' || username === 'undefined') ? 'Swarm User' : username}
             </span>
           </div>
-
           <div className="sidebar-top-actions-right">
             <button
               type="button"
@@ -105,7 +89,6 @@ export default function Sidebar({
             >
               <ChevronLeft size={16} />
             </button>
-
             <button
               type="button"
               className="sidebar-mobile-close"
@@ -117,110 +100,110 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* New Chat Button */}
+        {/* ── New conversation button ── */}
         {!isCollapsed && (
-          <div className="px-3 pb-2 pt-2">
+          <div className="px-3 pt-2 pb-1">
             <button
               onClick={() => { if (onNewConversation) onNewConversation() }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 bg-[var(--surface-hover)] border border-[var(--line)] rounded-xl hover:bg-[var(--line)] transition-colors text-[var(--text)] font-medium text-[13px]"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-[var(--surface-hover)] border border-[var(--line)] rounded-xl hover:bg-[var(--line)] transition-colors text-[var(--text)] font-medium text-[13px]"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               <span>New conversation</span>
             </button>
           </div>
         )}
 
-                  {/* Quick Actions Section */}
-          <div className="sidebar-section">
-            <span className="sidebar-section-title">Quick Actions</span>
-            <div className="sidebar-nav-list">
-              <button
-                type="button"
-                className="sidebar-item-btn font-semibold text-[var(--accent)]"
-                onClick={async () => {
-                  try {
-                    const token = localStorage.getItem('swarm_token');
-                    const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/calendar/auth-url`, {
-                      headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                  } catch (e) {
-                    console.error("Calendar auth failed", e);
-                  }
-                }}
-              >
-                <Calendar size={15} className="sidebar-item-icon text-[var(--accent)]" />
-                <span>Sync Google Calendar</span>
-              </button>
+        {/* ── Scrollable middle area ── */}
+        <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+
+          {/* Quick Actions */}
+          <div className="px-2 pt-4 pb-2">
+            <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+              Quick Actions
+            </p>
+            <button
+              type="button"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-semibold text-[var(--accent)] hover:bg-[var(--surface-hover)] transition-colors"
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('swarm_token')
+                  const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/calendar/auth-url`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  })
+                  const data = await res.json()
+                  if (data.url) window.location.href = data.url
+                } catch (e) { console.error("Calendar auth failed", e) }
+              }}
+            >
+              <Calendar size={14} className="flex-shrink-0" />
+              <span>Sync Google Calendar</span>
+            </button>
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon
               return (
                 <button
                   key={action.id}
                   type="button"
-                  className="sidebar-item-btn"
-                  onClick={() => {
-                    if (onSelectAction) {
-                      onSelectAction(action.prompt)
-                    }
-                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] transition-colors"
+                  onClick={() => { if (onSelectAction) onSelectAction(action.prompt) }}
                 >
-                  <Icon size={16} className="sidebar-item-icon" />
-                  <span className="sidebar-item-label">{action.label}</span>
+                  <Icon size={14} className="flex-shrink-0" />
+                  <span>{action.label}</span>
                 </button>
               )
             })}
           </div>
-        </div>
 
-        {/* Middle: Clean Chat History List */}
-        <div className="sidebar-section sidebar-history-section flex-1 overflow-y-auto">
-          {chatHistory.length > 0 ? (
-            <>
-              <span className="sidebar-section-title">Recent Conversations</span>
-              <div className="sidebar-history-list">
+          {/* Recent Conversations */}
+          <div className="px-2 pt-2 pb-2 flex-1">
+            {chatHistory.length > 0 ? (
+              <>
+                <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+                  Recent Conversations
+                </p>
                 {chatHistory.map((chat) => (
                   <button
                     key={chat.id}
                     type="button"
-                    className={`sidebar-history-item ${activeChatId === chat.id ? 'active' : ''}`}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-left transition-colors group ${
+                      activeChatId === chat.id
+                        ? 'bg-[var(--surface-hover)] text-[var(--text)] font-medium'
+                        : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'
+                    }`}
                     onClick={() => handleSelectHistory(chat.id, chat.title)}
                   >
-                    <MessageSquare size={15} className="sidebar-item-icon" />
-                    <span className="sidebar-history-title" title={chat.title}>
-                      {chat.title}
-                    </span>
+                    <MessageSquare size={13} className="flex-shrink-0 opacity-50" />
+                    <span className="truncate flex-1">{chat.title}</span>
                   </button>
                 ))}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 text-[var(--text-muted)] opacity-40">
+                <MessageSquare size={20} className="mb-2" />
+                <p className="text-[11px] text-center">Your chats will appear here</p>
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-[var(--text-muted)] opacity-50 mt-10">
-              <MessageSquare size={24} className="mb-3" />
-              <p className="text-xs text-center px-4">Your recent plans will appear here.</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Bottom: Theme Toggle + New Conversation Button */}
-        <div className="mt-auto px-2 pb-4 flex flex-col gap-1 w-full">
-            <button
-              type="button"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--surface-hover)] transition-colors text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
-              onClick={() => setIsMobileModalOpen(true)}
-            >
-              <Smartphone size={16} />
-              <span>Get Mobile App</span>
-            </button>
-            
-            <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} />
-          </div>
-        </aside>
+        {/* ── Bottom: Mobile App + Profile ── */}
+        <div className="px-2 pb-3 pt-1 border-t border-[var(--line)] flex flex-col gap-0.5">
+          <button
+            type="button"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] transition-colors"
+            onClick={() => setIsMobileModalOpen(true)}
+          >
+            <Smartphone size={14} className="flex-shrink-0" />
+            <span>Get Mobile App</span>
+          </button>
 
-      <MobileAppModal 
-        isOpen={isMobileModalOpen} 
-        onClose={() => setIsMobileModalOpen(false)} 
+          <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} />
+        </div>
+      </aside>
+
+      <MobileAppModal
+        isOpen={isMobileModalOpen}
+        onClose={() => setIsMobileModalOpen(false)}
         onToast={onToast}
       />
     </>

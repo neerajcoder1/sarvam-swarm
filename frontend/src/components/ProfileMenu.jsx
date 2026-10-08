@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Settings, HelpCircle, Zap, LogOut, Check } from 'lucide-react'
+import { Settings, HelpCircle, Zap, LogOut, Check, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
@@ -42,12 +42,12 @@ export default function ProfileMenu({ userEmail, firstName }) {
             <div className="py-2 border-b border-[var(--line)]">
               <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-bold">
-                    {firstName ? firstName[0].toUpperCase() : 'U'}
+                  <div className="w-6 h-6 rounded-full bg-[var(--surface-hover)] border border-[var(--line)] flex items-center justify-center flex-shrink-0">
+                    <User size={12} className="text-[var(--text-muted)]" />
                   </div>
-                  <span className="text-sm font-medium text-[var(--text)]">{firstName || 'User'}</span>
+                  <span className="text-[13px] font-medium text-[var(--text)]">{firstName || 'User'}</span>
                 </div>
-                <Check size={14} className="text-[var(--text)]" />
+                <Check size={13} className="text-[var(--text)]" />
               </button>
               
               <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors">
@@ -102,12 +102,12 @@ export default function ProfileMenu({ userEmail, firstName }) {
       {/* Trigger Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors text-[var(--text)]"
+        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors text-[var(--text)]"
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-indigo-500 flex items-center justify-center text-[var(--text)] font-bold flex-shrink-0">
-          {firstName ? firstName[0].toUpperCase() : 'U'}
+        <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] border border-[var(--line)] flex items-center justify-center flex-shrink-0">
+          <User size={15} className="text-[var(--text-muted)]" />
         </div>
-        <span className="text-sm font-semibold truncate flex-1 text-left">{firstName || 'User'}</span>
+        <span className="text-[13px] font-medium truncate flex-1 text-left">{firstName || 'User'}</span>
       </button>
     </div>
   )
