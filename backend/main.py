@@ -50,6 +50,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Health check endpoint (used by frontend cold-start detector) ──────────────
+@app.get("/health", tags=["system"])
+async def health_check():
+    return {"status": "ok", "service": "sarvam-swarm"}
+
+
 # ==========================================
 # CONFIGURABLE MODEL & SYSTEM CONSTANTS
 # ==========================================

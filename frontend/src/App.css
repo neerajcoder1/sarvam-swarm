@@ -1568,3 +1568,246 @@
   color: var(--text);
   cursor: pointer;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   COLD START LOADER  –  Render free-tier warm-up splash screen
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cold-loader-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #08080e;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+/* subtle dot-grid */
+.cold-loader-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* large ambient glow orb */
+.cold-loader-orb {
+  position: absolute;
+  top: -180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,106,61,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  animation: orb-pulse 4s ease-in-out infinite;
+}
+
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  50%       { opacity: 1;   transform: translateX(-50%) scale(1.12); }
+}
+
+/* ── Content column ── */
+.cold-loader-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.cold-loader-logo-wrap {
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 32px rgba(251,146,60,0.3));
+}
+
+/* ── Brand ── */
+.cold-loader-brand {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1;
+}
+
+/* ── Status line ── */
+.cold-loader-status {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  margin: 0.25rem 0 0.75rem;
+  min-height: 1.2em;
+}
+
+/* ── Agent pills ── */
+.cold-loader-agents {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cold-loader-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,106,61,0.25);
+  color: #e0e0e0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.cold-loader-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fb923c;
+  box-shadow: 0 0 6px #fb923c;
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Progress bar ── */
+.cold-loader-bar-track {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.cold-loader-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #FF6A3D, #fb923c, #fbbf24);
+  position: relative;
+}
+
+.cold-loader-bar-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: shimmer 2s linear infinite;
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Timer ── */
+.cold-loader-timer {
+  font-size: 0.72rem;
+  color: #555;
+  margin: 0 0 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Feature card ── */
+.cold-loader-feature-wrap {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cold-loader-feature-card {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.cold-loader-feature-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cold-loader-feature-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.2rem;
+}
+
+.cold-loader-feature-desc {
+  font-size: 0.78rem;
+  color: #888;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ── Carousel dots ── */
+.cold-loader-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.cold-loader-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.cold-loader-dot.active {
+  background: #FF6A3D;
+  transform: scale(1.35);
+}
+
+/* ── Footer ── */
+.cold-loader-footer {
+  position: absolute;
+  bottom: 1.5rem;
+  font-size: 0.75rem;
+  color: #444;
+  text-align: center;
+}
+
+.cold-loader-footer strong {
+  color: #888;
+}
+
+
+/* ── Hide scrollbar on horizontal chip strip (mobile) ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

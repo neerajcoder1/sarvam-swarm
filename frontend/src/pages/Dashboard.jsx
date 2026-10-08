@@ -505,6 +505,30 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* ── Mobile-only: horizontal mode chips ─────────────────── */}
+              <div className="flex sm:hidden w-full overflow-x-auto gap-2 pb-1 no-scrollbar px-1">
+                {[
+                  { id: 'Lightning',    icon: <Zap    size={13} className="text-yellow-500" />, label: 'Lightning'  },
+                  { id: 'Deep Swarm',   icon: <Brain  size={13} className="text-blue-400"   />, label: 'Deep Swarm' },
+                  { id: 'Wellness Mode',icon: <Heart  size={13} className="text-pink-400"   />, label: 'Wellness'   },
+                  { id: 'Hustle Mode',  icon: <Flame  size={13} className="text-orange-400" />, label: 'Hustle'     },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSwarmMode(m.id)}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all border ${
+                      swarmMode === m.id
+                        ? 'bg-[#2c2d33] border-[var(--accent)] text-white'
+                        : 'bg-transparent border-[rgba(255,255,255,0.1)] text-[var(--text-muted)] hover:text-white'
+                    }`}
+                  >
+                    {m.icon}
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="main-input-bar relative">
                 <button
                   type="button"
@@ -539,24 +563,26 @@ export default function Dashboard() {
                 />
 
                 
-                {/* Mode Selector Dropdown */}
+                {/* Mode Selector Dropdown — visible on all screen sizes */}
                 <div className="relative">
                   <button 
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl hover:bg-[#2c2d33] cursor-pointer transition-all text-[var(--text-muted)] hover:text-white text-sm font-medium"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl hover:bg-[#2c2d33] cursor-pointer transition-all text-[var(--text-muted)] hover:text-white text-sm font-medium"
                   >
                     {swarmMode === 'Lightning' && <Zap size={14} className="text-yellow-500" />}
                     {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-400" />}
                     {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-400" />}
                     {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-400" />}
-                    <span>{swarmMode}</span>
+                    {/* Show label only on md+, icon-only on mobile */}
+                    <span className="hidden sm:inline">{swarmMode}</span>
                     <ChevronDown size={14} className="opacity-50 ml-0.5" />
                   </button>
                   
                   {isDropdownOpen && (
                     <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
-                      <div className="p-2 flex justify-end">
+                      <div className="p-2 flex justify-between items-center">
+                        <span className="text-xs font-semibold text-[var(--text-muted)] pl-2 uppercase tracking-wider">Swarm Mode</span>
                         <button 
                           onClick={() => setIsDropdownOpen(false)} 
                           className="p-1 hover:bg-[#2c2d33] rounded-md transition-colors text-[var(--text-muted)] hover:text-white"
@@ -566,23 +592,35 @@ export default function Dashboard() {
                       </div>
                       <div className="p-2 flex flex-col gap-1 pt-0">
                         <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                          <Zap size={18} className="text-[var(--text-muted)]" />
-                          <span className="font-semibold text-white">Lightning</span>
+                          <Zap size={18} className="text-yellow-500" />
+                          <div>
+                            <span className="font-semibold text-white block">Lightning</span>
+                            <span className="text-[11px] text-[var(--text-muted)]">Fast, instant answers</span>
+                          </div>
                           {swarmMode === 'Lightning' && <Check size={16} className="absolute right-4 text-white" />}
                         </button>
                         <button onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                          <Brain size={18} className="text-[var(--text-muted)]" />
-                          <span className="font-semibold text-white">Deep Swarm</span>
+                          <Brain size={18} className="text-blue-400" />
+                          <div>
+                            <span className="font-semibold text-white block">Deep Swarm</span>
+                            <span className="text-[11px] text-[var(--text-muted)]">Full 5-agent pipeline</span>
+                          </div>
                           {swarmMode === 'Deep Swarm' && <Check size={16} className="absolute right-4 text-white" />}
                         </button>
                         <button onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                          <Heart size={18} className="text-[var(--text-muted)]" />
-                          <span className="font-semibold text-white">Wellness Mode</span>
+                          <Heart size={18} className="text-pink-400" />
+                          <div>
+                            <span className="font-semibold text-white block">Wellness Mode</span>
+                            <span className="text-[11px] text-[var(--text-muted)]">Biometric-aware planning</span>
+                          </div>
                           {swarmMode === 'Wellness Mode' && <Check size={16} className="absolute right-4 text-white" />}
                         </button>
                         <button onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
-                          <Flame size={18} className="text-[var(--text-muted)]" />
-                          <span className="font-semibold text-white">Hustle Mode</span>
+                          <Flame size={18} className="text-orange-400" />
+                          <div>
+                            <span className="font-semibold text-white block">Hustle Mode</span>
+                            <span className="text-[11px] text-[var(--text-muted)]">Max productivity, no breaks</span>
+                          </div>
                           {swarmMode === 'Hustle Mode' && <Check size={16} className="absolute right-4 text-white" />}
                         </button>
                       </div>
@@ -590,6 +628,7 @@ export default function Dashboard() {
                         <button onClick={() => navigate('/upgrade')} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
                           <div>
                             <div className="flex items-center gap-2">
+                              <Crown size={14} className="text-yellow-400" />
                               <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
                             </div>
                             <span className="text-xs text-[var(--text-muted)]">Unlock extended capabilities</span>

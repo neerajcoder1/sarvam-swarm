@@ -1,10 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
 import About from './pages/About'
 import Upgrade from './pages/Upgrade'
+import ColdStartLoader from './components/ColdStartLoader'
 import './App.css'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const PING_INTERVAL_MS = 3000
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('swarm_token')
@@ -13,6 +18,8 @@ const ProtectedRoute = ({ children }) => {
 }
 
 export default function App() {
+  const [backendReady, setBackendReady] = useState(false)
+
   useEffect(() => {
     const stored = localStorage.getItem('sarvam-swarm-theme')
     const dark = stored ? stored === 'dark' : true
@@ -20,27 +27,66 @@ export default function App() {
     document.documentElement.classList.toggle('light', !dark)
   }, [])
 
+  // ── Ping backend until it wakes up (cold-start detection) ────────────────
+  useEffect(() => {
+    let timer
+    const ping = async () => {
+      try {
+        const res = await fetch(`${API_URL}/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000),
+        })
+        if (res.ok) {
+          setBackendReady(true)
+          return
+        }
+      } catch {
+        // backend still sleeping — try again
+      }
+      timer = setTimeout(ping, PING_INTERVAL_MS)
+    }
+    ping()
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-                <Route path="/about" element={
-          <ProtectedRoute>
-            <About />
-          </ProtectedRoute>
-        } />
-        <Route path="/upgrade" element={
-          <ProtectedRoute>
-            <Upgrade />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      {/* ── Cold-start splash: overlays everything until backend wakes ── */}
+      <AnimatePresence>
+        {!backendReady && (
+          <motion.div
+            key="cold-loader"
+            style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
+            exit={{ opacity: 0, scale: 1.04 }}
+            transition={{ duration: 0.55, ease: 'easeInOut' }}
+          >
+            <ColdStartLoader />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── App routes mount underneath (no flicker on reveal) ── */}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/about" element={
+            <ProtectedRoute>
+              <About />
+            </ProtectedRoute>
+          } />
+          <Route path="/upgrade" element={
+            <ProtectedRoute>
+              <Upgrade />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   )
 }
