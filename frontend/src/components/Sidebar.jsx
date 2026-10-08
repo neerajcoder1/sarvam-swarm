@@ -41,6 +41,7 @@ export default function Sidebar({
   activeChatId,
   onSelectHistory
 }) {
+  const navigate = useNavigate();
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
 
   const handleSelectHistory = (id, title) => {
