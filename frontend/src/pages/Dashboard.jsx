@@ -44,7 +44,7 @@ export default function Dashboard() {
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIndex((prev) => (prev + 1) % DYNAMIC_PLACEHOLDERS.length)
-    }, 2500)
+    }, 3500)
     return () => clearInterval(interval)
   }, [])
   
@@ -550,16 +550,35 @@ export default function Dashboard() {
                 {/* Grok-Style Input Card */}
                 <div className="grok-input-card relative w-full bg-[#18181b] border border-[#27272a] rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-4 shadow-2xl flex flex-col gap-3 transition-all focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--accent-ring)]">
                   
-                  {/* Top: Text Area / Field with Dynamic Rotating Placeholder */}
-                  <input
-                    type="text"
-                    className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg placeholder-[#6e6f7a] px-1 font-sans focus:outline-none focus:ring-0 transition-all duration-300"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder={DYNAMIC_PLACEHOLDERS[placeholderIndex]}
-                    onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
-                    disabled={isListening}
-                  />
+                  {/* Top: Text Area / Field + Left-to-Right Animated Placeholder */}
+                  <div className="relative w-full flex items-center min-h-[28px]">
+                    <input
+                      type="text"
+                      className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg px-1 font-sans focus:outline-none focus:ring-0 z-10"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
+                      disabled={isListening}
+                    />
+
+                    {/* Smooth Left-to-Right Sliding Animated Placeholder */}
+                    {!input && (
+                      <div className="absolute left-1 pointer-events-none overflow-hidden h-full flex items-center">
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={placeholderIndex}
+                            initial={{ opacity: 0, x: -28 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 28 }}
+                            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-[#6e6f7a] text-base sm:text-lg font-sans select-none whitespace-nowrap"
+                          >
+                            {DYNAMIC_PLACEHOLDERS[placeholderIndex]}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Hidden File Upload */}
                   <input 
