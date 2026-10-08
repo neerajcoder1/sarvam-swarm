@@ -11,6 +11,7 @@ import {
   X,
   Smartphone
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
 import SwarmLogo from './SwarmLogo'
 import MobileAppModal from './MobileAppModal'
