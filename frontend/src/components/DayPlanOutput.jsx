@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { CalendarCheck, Check, Volume2, Play, Square, VolumeX } from 'lucide-react'
 import { DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
@@ -23,6 +24,32 @@ const taskItemVariants = {
 }
 
 export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration = VOICE_NARRATION, speechActive, onPlay, onStop }) {
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncDone, setSyncDone] = useState(false)
+
+  const handleCalendarSync = async () => {
+    try {
+      setIsSyncing(true)
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const token = localStorage.getItem('swarm_token')
+      const res = await fetch(API_URL + '/api/calendar/events/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify(tasks)
+      })
+      if (res.ok) {
+        setSyncDone(true)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
   return (
     <div className="day-plan-card glass-panel pulse-glow">
       <div className="day-plan-header">
@@ -78,6 +105,18 @@ export default function DayPlanOutput({ tasks = DAY_PLAN_TASKS, voiceNarration =
           <Volume2 size={16} color="rgba(255, 255, 255, 0.75)" />
           <span>Speak with Sarvam Voice</span>
         </button>
+
+        <button
+          type="button"
+          className={speak-plan-btn  text-white transition-all}
+          onClick={handleCalendarSync}
+          disabled={isSyncing || syncDone}
+          style={{ marginTop: '0.5rem', background: syncDone ? '#16a34a' : 'var(--accent)' }}
+        >
+          <CalendarCheck size={16} color="white" />
+          <span style={{ color: 'white' }}>{isSyncing ? 'Syncing...' : syncDone ? 'Synced to Google Calendar!' : 'Push to Google Calendar'}</span>
+        </button>
+
 
         <div className="voice-preview-box">
           <p className="voice-text">

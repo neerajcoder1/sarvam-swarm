@@ -134,3 +134,58 @@ def get_events(current_user: models.User = Depends(auth_router.get_current_user)
     
     events = events_result.get('items', [])
     return {"events": events}
+
+
+﻿@router.post("/events/sync")
+def sync_events(tasks: list[dict], current_user: models.User = Depends(auth_router.get_current_user), db: Session = Depends(get_db)):
+    if not current_user.google_token:
+        raise HTTPException(status_code=400, detail="Google Calendar not connected")
+        
+    creds_data = json.loads(current_user.google_token)
+    creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
+    service = build('calendar', 'v3', credentials=creds)
+    
+    created_events = []
+    
+    import datetime
+    
+    # Get today's date in YYYY-MM-DD format
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    
+    for task in tasks:
+        # We need to parse the time (e.g., '10:00 AM') into an ISO format for today
+        time_str = task.get("time", "")
+        if not time_str:
+            continue
+            
+        try:
+            # Parse '10:00 AM'
+            time_obj = datetime.datetime.strptime(time_str, "%I:%M %p").time()
+            
+            # Combine today's date and the parsed time
+            start_dt = datetime.datetime.combine(datetime.date.today(), time_obj)
+            
+            # Assume 1 hour duration by default if not specified
+            end_dt = start_dt + datetime.timedelta(hours=1)
+            
+            event = {
+                'summary': task.get("title", "Swarm Task"),
+                'description': task.get("description", ""),
+                'start': {
+                    'dateTime': start_dt.isoformat(),
+                    'timeZone': 'UTC', # Should use user's timezone if possible, default to UTC for now
+                },
+                'end': {
+                    'dateTime': end_dt.isoformat(),
+                    'timeZone': 'UTC',
+                },
+            }
+            
+            event_result = service.events().insert(calendarId='primary', body=event).execute()
+            created_events.append(event_result.get('htmlLink'))
+            
+        except Exception as e:
+            print(f"Failed to sync task: {e}")
+            continue
+            
+    return {"message": f"Successfully synced {len(created_events)} events!", "links": created_events}
