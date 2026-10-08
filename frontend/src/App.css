@@ -1535,14 +1535,17 @@
     position: fixed;
     left: 0;
     top: 0;
-    width: 280px;
+    width: 82vw;
+    max-width: 320px;
+    min-width: 280px;
     /* 100dvh = dynamic viewport height, excludes browser chrome/address bar */
     height: 100dvh;
     transform: translateX(-100%);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
     /* iOS safe area: ensures profile btn clears home indicator */
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
+    z-index: 50 !important;
   }
 
   /* Bottom section (profile + mobile app) must never be squished offscreen */
@@ -1551,7 +1554,11 @@
   }
 
   .permanent-sidebar.open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
+    width: 82vw !important;
+    max-width: 320px !important;
+    opacity: 1 !important;
+    padding: 1.25rem 1rem !important;
   }
 
   .sidebar-mobile-close {

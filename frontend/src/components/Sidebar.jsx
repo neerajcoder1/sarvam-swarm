@@ -82,7 +82,7 @@ export default function Sidebar({
           <div className="sidebar-top-actions-right">
             <button
               type="button"
-              className="sidebar-collapse-btn"
+              className="sidebar-collapse-btn hidden lg:flex"
               onClick={onToggleCollapse}
               title="Collapse sidebar"
               aria-label="Collapse sidebar"
@@ -91,7 +91,7 @@ export default function Sidebar({
             </button>
             <button
               type="button"
-              className="sidebar-mobile-close"
+              className="sidebar-mobile-close flex lg:hidden"
               onClick={onToggleOpen}
               aria-label="Close sidebar"
             >
@@ -101,17 +101,15 @@ export default function Sidebar({
         </div>
 
         {/* ── New conversation button ── */}
-        {!isCollapsed && (
-          <div className="px-3 pt-2 pb-1">
-            <button
-              onClick={() => { if (onNewConversation) onNewConversation() }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-[var(--surface-hover)] border border-[var(--line)] rounded-xl hover:bg-[var(--line)] transition-colors text-[var(--text)] font-medium text-[13px]"
-            >
-              <Plus size={15} />
-              <span>New conversation</span>
-            </button>
-          </div>
-        )}
+        <div className="px-3 pt-2 pb-1">
+          <button
+            onClick={() => { if (onNewConversation) onNewConversation() }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-[var(--surface-hover)] border border-[var(--line)] rounded-xl hover:bg-[var(--line)] transition-colors text-[var(--text)] font-medium text-[13px] cursor-pointer"
+          >
+            <Plus size={15} />
+            <span>New conversation</span>
+          </button>
+        </div>
 
         {/* ── Scrollable middle area ── */}
         <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
