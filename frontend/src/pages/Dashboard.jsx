@@ -521,8 +521,8 @@ export default function Dashboard() {
                 </div>
 
                 {/* Quick Suggestions Pills */}
-                <div className="w-full overflow-x-auto no-scrollbar pt-2 sm:pt-4 pb-1">
-                  <div className="flex items-center justify-center gap-2 flex-wrap sm:flex-nowrap">
+                <div className="w-full max-w-2xl mx-auto pt-2 sm:pt-4 pb-1">
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
                     {QUICK_SUGGESTIONS.map((suggestion) => (
                       <button
                         key={suggestion}
@@ -547,8 +547,8 @@ export default function Dashboard() {
                 exit={{ y: 350, opacity: 0 }}
                 transition={{ duration: 0.8, ease: [0.25, 1, 0.35, 1] }}
               >
-                {/* Grok-Style Floating Upgrade Banner */}
-                <div className="w-full bg-gradient-to-r from-[#121318] via-[#1a1c24] to-[#121318] border border-[#2a2c36] rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-lg relative overflow-hidden group">
+                {/* Grok-Style Floating Upgrade Banner (Mobile & Tablet ONLY — Hidden on Laptop for clean desktop view) */}
+                <div className="w-full bg-gradient-to-r from-[#121318] via-[#1a1c24] to-[#121318] border border-[#2a2c36] rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-lg relative overflow-hidden group lg:hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent pointer-events-none" />
                   <div className="space-y-0.5 z-10">
                     <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5">
@@ -581,7 +581,7 @@ export default function Dashboard() {
 
                     {/* Smooth Left-to-Right Sliding Animated Placeholder */}
                     {!input && (
-                      <div className="absolute left-1 pointer-events-none overflow-hidden h-full flex items-center">
+                      <div className="absolute left-1 right-28 pointer-events-none overflow-hidden h-full flex items-center">
                         <AnimatePresence mode="wait">
                           <motion.span
                             key={placeholderIndex}
@@ -589,7 +589,7 @@ export default function Dashboard() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 28 }}
                             transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-[#6e6f7a] text-base sm:text-lg font-sans select-none whitespace-nowrap"
+                            className="text-[#6e6f7a] text-base sm:text-lg font-sans select-none whitespace-nowrap truncate"
                           >
                             {DYNAMIC_PLACEHOLDERS[placeholderIndex]}
                           </motion.span>
