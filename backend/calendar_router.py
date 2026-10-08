@@ -136,7 +136,7 @@ def get_events(current_user: models.User = Depends(auth_router.get_current_user)
     return {"events": events}
 
 
-﻿@router.post("/events/sync")
+@router.post("/events/sync")
 def sync_events(tasks: list[dict], current_user: models.User = Depends(auth_router.get_current_user), db: Session = Depends(get_db)):
     if not current_user.google_token:
         raise HTTPException(status_code=400, detail="Google Calendar not connected")
