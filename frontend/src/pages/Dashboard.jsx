@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu } from 'lucide-react'
+import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Heart, Flame, Crown, ChevronDown, Check } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 import ThemeToggle from '../components/ThemeToggle'
 import SwarmLogo from '../components/SwarmLogo'
@@ -20,7 +20,9 @@ const QUICK_SUGGESTIONS = [
 ]
 
 export default function Dashboard() {
-  const [view, setView] = useState('splash') // 'splash' | 'homepage' | 'loading' | 'dashboard'
+  const [view, setView] = useState('splash')
+  const [swarmMode, setSwarmMode] = useState('Deep Swarm')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false) // 'splash' | 'homepage' | 'loading' | 'dashboard'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   
@@ -526,11 +528,61 @@ export default function Dashboard() {
                   disabled={isListening}
                 />
 
-                {/* Grok AI Model Chip */}
-                <div className="model-chip hidden md:flex">
-                  <Sparkles size={14} className="text-[var(--accent)]" />
-                  <span>Swarm 2.0</span>
+                
+                {/* Mode Selector Dropdown */}
+                <div className="relative">
+                  <button 
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="model-chip hidden md:flex hover:bg-[var(--surface-hover)] cursor-pointer transition-colors border border-[var(--line)]"
+                  >
+                    {swarmMode === 'Lightning' && <Zap size={14} className="text-yellow-500" />}
+                    {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-500" />}
+                    {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-500" />}
+                    {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-500" />}
+                    <span className="font-semibold">{swarmMode}</span>
+                    <ChevronDown size={14} className="text-[var(--text-muted)] ml-1" />
+                  </button>
+                  
+                  {isDropdownOpen && (
+                    <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
+                      <div className="p-2 flex flex-col gap-1">
+                        <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                          <Zap size={18} className="text-[var(--text-muted)]" />
+                          <span className="font-semibold text-white">Lightning</span>
+                          {swarmMode === 'Lightning' && <Check size={16} className="absolute right-4 text-white" />}
+                        </button>
+                        <button onClick={() => { setSwarmMode('Deep Swarm'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                          <Brain size={18} className="text-[var(--text-muted)]" />
+                          <span className="font-semibold text-white">Deep Swarm</span>
+                          {swarmMode === 'Deep Swarm' && <Check size={16} className="absolute right-4 text-white" />}
+                        </button>
+                        <button onClick={() => { setSwarmMode('Wellness Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                          <Heart size={18} className="text-[var(--text-muted)]" />
+                          <span className="font-semibold text-white">Wellness Mode</span>
+                          {swarmMode === 'Wellness Mode' && <Check size={16} className="absolute right-4 text-white" />}
+                        </button>
+                        <button onClick={() => { setSwarmMode('Hustle Mode'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
+                          <Flame size={18} className="text-[var(--text-muted)]" />
+                          <span className="font-semibold text-white">Hustle Mode</span>
+                          {swarmMode === 'Hustle Mode' && <Check size={16} className="absolute right-4 text-white" />}
+                        </button>
+                      </div>
+                      <div className="p-2 border-t border-[#2c2d33] bg-[#222327]">
+                        <button className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
+                            </div>
+                            <span className="text-xs text-[var(--text-muted)]">Unlock extended capabilities</span>
+                          </div>
+                          <span className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">Upgrade</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
 
                 <button
                   type="button"
