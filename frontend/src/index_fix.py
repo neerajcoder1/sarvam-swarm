@@ -1,5 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import "tailwindcss";
+with open("frontend/src/index.css", "r", encoding="utf-8") as f:
+    content = f.read()
+
+import re
+
+# Keep imports
+imports = re.findall(r'@import .*?;', content)
+
+new_content = "\n".join(imports) + """
 
 /* Grok AI Minimalist Design System */
 :root, html.dark {
@@ -56,3 +63,7 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
+"""
+
+with open("frontend/src/index.css", "w", encoding="utf-8") as f:
+    f.write(new_content)

@@ -21,7 +21,7 @@ export const runSwarmOrchestration = async (
 
   // Fetch plan updates from backend
   try {
-    const response = await fetch('http://localhost:8000/api/swarm', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/swarm`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,6 +34,19 @@ export const runSwarmOrchestration = async (
       if (parsed && parsed.agents && parsed.tasks) {
         activeData = parsed
         console.log("Successfully retrieved data from FastAPI:", parsed)
+
+        // Kick off TTS generation in the background!
+        activeData.ttsPromise = fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            text: parsed.voice_narration,
+            language: parsed.detected_language?.language || "english"
+          })
+        }).then(res => res.json()).then(data => data.audio_base64).catch(err => {
+          console.error("TTS fetch failed", err)
+          return null
+        })
       }
     } else {
       console.warn("Backend returned error status, using default mock data.")
@@ -61,7 +74,13 @@ export const runSwarmOrchestration = async (
         if (onAgentComplete) onAgentComplete(agent.id, isLastAgent)
         
         if (isLastAgent && onSwarmComplete) {
-          onSwarmComplete(activeData.voice_narration, activeData.voice_settings, activeData.audio_base64)
+          if (activeData.ttsPromise) {
+            activeData.ttsPromise.then(audioBase64 => {
+              onSwarmComplete(activeData.voice_narration, activeData.voice_settings, audioBase64 || activeData.audio_base64)
+            })
+          } else {
+            onSwarmComplete(activeData.voice_narration, activeData.voice_settings, activeData.audio_base64)
+          }
         }
       }, 1000)
 

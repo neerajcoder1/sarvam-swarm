@@ -23,6 +23,13 @@ export default function Dashboard() {
   const [view, setView] = useState('splash') // 'splash' | 'homepage' | 'loading' | 'dashboard'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  
+  const [chatHistory, setChatHistory] = useState(() => {
+    const saved = localStorage.getItem('swarm_chat_history')
+    return saved ? JSON.parse(saved) : []
+  })
+  const [activeChatId, setActiveChatId] = useState(null)
+
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [swarmPhase, setSwarmPhase] = useState('idle') // 'idle' | 'running' | 'complete'
@@ -291,9 +298,26 @@ export default function Dashboard() {
             setActiveAgentIndex(prev => prev + 1)
           }
         },
-        onSwarmComplete: (voiceNarration, voiceSettingsObj, audioBase64) => {
+                onSwarmComplete: (voiceNarration, voiceSettingsObj, audioBase64) => {
           setActiveAgentIndex(-1)
           setSwarmPhase('complete')
+          
+          setTasksList(prevTasks => {
+            const newChat = {
+               id: Date.now().toString(),
+               title: queryText,
+               time: 'Just now',
+               tasks: prevTasks
+            };
+            setChatHistory(prevHistory => {
+               const updated = [newChat, ...prevHistory];
+               localStorage.setItem('swarm_chat_history', JSON.stringify(updated));
+               return updated;
+            });
+            setActiveChatId(newChat.id);
+            return prevTasks;
+          });
+
           triggerVoiceSpeech(voiceNarration, voiceSettingsObj, audioBase64)
         }
       })
@@ -324,6 +348,27 @@ export default function Dashboard() {
     setSpeechActive(false)
   }
 
+  
+  const handleSelectHistory = (id) => {
+    const chat = chatHistory.find(c => c.id === id)
+    if (chat) {
+      setActiveChatId(id)
+      setTasksList(chat.tasks)
+      setSwarmPhase('complete')
+      setView('dashboard')
+      setSidebarOpen(false)
+      if (window.innerWidth < 768) setSidebarCollapsed(true)
+    }
+  }
+
+    useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('calendar_connected') === 'true') {
+      triggerToast("✅ Google Calendar connected securely!");
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
+
   const handleBackToHome = () => {
     clearTimers()
     stopVoiceSpeech()
@@ -349,6 +394,9 @@ export default function Dashboard() {
           onToggleOpen={() => setSidebarOpen((prev) => !prev)}
           isCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+          chatHistory={chatHistory}
+          activeChatId={activeChatId}
+          onSelectHistory={handleSelectHistory}
           onSelectAction={(promptText) => {
             setSidebarCollapsed(true)
             setSidebarOpen(false)
@@ -360,6 +408,7 @@ export default function Dashboard() {
           onNewConversation={() => {
             handleBackToHome()
             setSidebarOpen(false)
+            triggerToast("Started a new conversation ✨")
           }}
         />
       )}
@@ -444,13 +493,32 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="main-input-bar">
-                <div className="input-prefix-icon">
+              <div className="main-input-bar relative">
+                <button
+                  type="button"
+                  className="input-prefix-icon hover:text-[var(--text)] transition-colors cursor-pointer"
+                  onClick={() => {
+                    const el = document.getElementById('file-upload')
+                    if (el) el.click()
+                  }}
+                  title="Attach or Share"
+                >
                   <Plus size={20} />
-                </div>
+                </button>
+                <input 
+                  type="file" 
+                  id="file-upload" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setInput(input + ` [Attached: ${e.target.files[0].name}] `)
+                    }
+                  }}
+                />
+                
                 <input
                   type="text"
-                  className="main-input-field"
+                  className="main-input-field focus:outline-none focus:ring-0 focus:border-transparent"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="What do you want to know?"
@@ -458,29 +526,29 @@ export default function Dashboard() {
                   disabled={isListening}
                 />
 
-                {isListening && (
-                  <span className="voice-status-label animate-pulse">Voice Input</span>
-                )}
+                {/* Grok AI Model Chip */}
+                <div className="model-chip hidden md:flex">
+                  <Sparkles size={14} className="text-[var(--accent)]" />
+                  <span>Swarm 2.0</span>
+                </div>
 
                 <button
                   type="button"
-                  className={`mic-button-glow ${isListening ? 'recording' : ''}`}
+                  className={`text-[var(--text-muted)] hover:text-[var(--text)] transition-colors flex items-center justify-center p-2 ${isListening ? 'text-[var(--accent)] animate-pulse' : ''}`}
                   onClick={toggleListening}
                   title={isListening ? 'Listening...' : 'Voice Input'}
                 >
                   <Mic size={20} />
                 </button>
 
-                {input.trim() && (
-                  <button
-                    type="button"
-                    className="send-button"
-                    onClick={() => handleStartSwarm()}
-                    title="Send Request"
-                  >
-                    <Send size={16} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="send-btn"
+                  onClick={() => handleStartSwarm()}
+                  title="Send Request"
+                >
+                  <Send size={16} strokeWidth={2.5} />
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -606,112 +674,6 @@ export default function Dashboard() {
                         onStop={stopVoiceSpeech}
                         voiceNarration={voiceNarrationData}
                       />
-                    </div>
-
-                    {/* Right Column: Prediction + Memory Cards */}
-                    <div className="dashboard-results-right flex flex-col gap-6">
-                      {/* Swarm Prediction Card */}
-                      <div className="prediction-card glass-panel">
-                        <div className="prediction-card-header">
-                          <div className="prediction-card-title-group">
-                            <span className="prediction-card-icon">🕒</span>
-                            <div className="flex flex-col text-left">
-                              <h3 className="prediction-card-title">Swarm Prediction</h3>
-                              <p className="prediction-card-subtitle">Proactive AI Co-Pilot</p>
-                            </div>
-                          </div>
-
-                          {/* Toggle Switch */}
-                          <div className="flex items-center gap-3">
-                            <span className="prediction-toggle-label text-xs font-semibold text-[var(--text-subtle)]">
-                              Predictive Mode: {predictiveMode ? 'ON' : 'OFF'}
-                            </span>
-                            <button
-                              type="button"
-                              className={`prediction-toggle-switch ${predictiveMode ? 'active' : ''}`}
-                              onClick={togglePredictiveMode}
-                              aria-label="Toggle Predictive Mode"
-                            >
-                              <div className="prediction-toggle-knob" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="prediction-card-body mt-2 text-left">
-                          <p className="prediction-card-desc">
-                            It’s 8:10 AM — you usually eat breakfast at 8:15. Want me to add it automatically?
-                          </p>
-
-                          <div className="prediction-card-actions mt-4 text-left">
-                            {predictionAdded ? (
-                              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                                <span className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-xs font-bold">✓</span>
-                                <span>Added to your day</span>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                className="prediction-add-btn"
-                                onClick={addBreakfastTask}
-                              >
-                                Yes, add it now
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* My Profile Memory Card */}
-                      <div className="prediction-card glass-panel text-left">
-                        <div className="prediction-card-header">
-                          <div className="prediction-card-title-group">
-                            <span className="prediction-card-icon">👤</span>
-                            <div className="flex flex-col">
-                              <h3 className="prediction-card-title">My Profile Memory</h3>
-                              <p className="prediction-card-subtitle text-left">Swarm Memory Node</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="prediction-card-body mt-2 text-left">
-                          <p className="prediction-card-desc text-[var(--text-muted)] font-medium">
-                            Swarm remembers: Priya prefers morning walks with mom. Gets low on energy between 2–4 PM. Always calls mom at 8:30 PM. Last task: Grocery list prepared.
-                          </p>
-
-                          <AnimatePresence>
-                            {profileLoaded ? (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="mt-4 pt-3 border-t border-[var(--line)] flex flex-col gap-2 overflow-hidden"
-                              >
-                                <span className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider">
-                                  Smart suggestions loaded:
-                                </span>
-                                <div className="flex flex-col gap-2 text-xs text-[var(--text-muted)]">
-                                  <div className="flex items-start gap-2 bg-[var(--surface-hover)] p-2.5 rounded-lg border border-[var(--line)]">
-                                    <span className="text-[var(--accent)] font-bold">💡</span>
-                                    <span>Since you usually walk in the morning, I added 15-min walk (8:30 AM).</span>
-                                  </div>
-                                  <div className="flex items-start gap-2 bg-[var(--surface-hover)] p-2.5 rounded-lg border border-[var(--line)]">
-                                    <span className="text-[var(--accent)] font-bold">💡</span>
-                                    <span>Your energy is low at 2 PM — should I suggest a protein snack? (Added at 2:15 PM).</span>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            ) : (
-                              <button
-                                type="button"
-                                className="prediction-add-btn mt-4"
-                                onClick={handleLoadProfile}
-                              >
-                                Load My Profile
-                              </button>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
                     </div>
 
                     <div ref={bottomRef} />

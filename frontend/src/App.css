@@ -187,6 +187,12 @@
   font-weight: 400;
 }
 
+.main-input-field:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
 .main-input-field::placeholder {
   color: var(--text-subtle);
 }
@@ -326,28 +332,31 @@
   background: var(--surface);
   border: 1px solid var(--line);
   padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: 24px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 .swarm-agent-card:hover {
   background: var(--surface-hover);
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
 .swarm-agent-card.active {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 12px var(--accent-ring);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15), inset 0 0 0 1px var(--accent);
 }
 
 .swarm-agent-card.complete {
   border-color: var(--status-success);
+  background: var(--surface);
 }
 
 .card-num {
@@ -478,13 +487,19 @@
 
 /* Day Plan Output Card */
 .day-plan-card {
-  padding: 2.25rem;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
   background: var(--surface);
   border: 1px solid var(--line) !important;
-  box-shadow: none !important;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease;
+}
+
+.day-plan-card:hover {
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.08) !important;
 }
 
 .day-plan-header {
@@ -525,17 +540,18 @@
 .task-item {
   display: flex;
   align-items: center;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
   background: var(--bg-elevated);
   border: 1px solid var(--line);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .task-item:hover {
   background: var(--surface-hover);
   border-color: var(--accent);
-  transform: translateX(4px);
+  transform: translateX(6px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .task-time-pill {
@@ -1025,10 +1041,11 @@
 
 /* ── Dashboard Results 2-Column Grid ── */
 .dashboard-results-grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .dashboard-results-left {

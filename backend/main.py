@@ -13,7 +13,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-from voice_service import voice_service
+from services.voice_service import voice_service
 
 # Load environment variables (e.g. from .env file during development)
 load_dotenv()
@@ -33,7 +33,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("swarm_backend")
 
+import models
+from database import engine
+models.Base.metadata.create_all(bind=engine)
+
+import auth_router, calendar_router
 app = FastAPI(title="Sarvam Swarm Backend", version="1.0.0")
+app.include_router(auth_router.router); app.include_router(calendar_router.router)
 
 # 1. WIDE-OPEN CORS MIDDLEWARE FOR FRONTEND COMPATIBILITY
 app.add_middleware(
@@ -293,47 +299,7 @@ LANGUAGE_CONFIGS = {
 EXPECTED_AGENT_IDS = ["orchestrator", "personalization", "task-executor", "recommendation", "voice-narrator"]
 
 # Optimized prompt instructing the model to generate ONLY the dynamic components
-SYSTEM_PROMPT = """You are an AI swarm planning generator. Return ONLY JSON matching this format:
-{
-  "traces": {
-    "orchestrator": "trace text (20-35 words)",
-    "personalization": "trace text (20-35 words)",
-    "task-executor": "trace text (20-35 words)",
-    "recommendation": "trace text (20-35 words)",
-    "voice-narrator": "trace text (20-35 words)"
-  },
-  "tasks": [
-    {"time": "time string", "title": "task title", "description": "task details"}
-  ],
-  "voice_narration": "Natural, warm narration string",
-  "language": "detected language: 'english', 'hindi', 'hinglish', 'tamil', 'kannada', 'telugu', 'malayalam', 'marathi', 'gujarati', 'punjabi', or 'bengali'",
-  "language_confidence": 0.95
-}
-Generate 4-5 tasks. Traces must be 20-35 words. Return ONLY valid JSON, no explanations, no markdown wrappers.
-
-### HALLUCINATION & NONSENSE PREVENTION:
-- If the user query is gibberish, nonsense, single words with no context, or has no actionable task scheduling request (e.g., 'asdfgh', 'banana', 'rocket', 'guitar'), you MUST NOT fabricate a schedule. Instead, set "tasks" to an empty list [] and "voice_narration" to: "I couldn't understand what tasks you want me to schedule. Could you tell me what you'd like to plan?".
-
-### HUMAN-FIRST CONVERSATIONAL NARRATION:
-- Do NOT sound like a GPS reading time and task title strings literally. Guide and explain the schedule naturally like a warm companion (e.g., 'Let's start with your assignment in the morning when your focus is highest, then head to the gym...').
-
-### LANGUAGE-SPECIFIC NARRATION STYLES:
-- English: Warm, encouraging, conversational (e.g., 'Hey! I've planned your day so you don't feel overwhelmed...').
-- Hindi: Polite, natural, conversational (e.g., 'नमस्ते! मैंने आपके पूरे दिन को संतुलित तरीके से व्यवस्थित किया है...').
-- Hinglish: Casual, friendly, highly colloquial (e.g., 'Bro, maine tera pura din optimize kar diya hai. Sabse pehle assignment nipta lete hain...'). Do NOT sound like a direct translation.
-- Other languages: Follow their native natural conversational flow.
-
-### CONTEXT-AWARE PERSONALITY ADAPTATION:
-- Analyze the user query context. If the user mentions stress, low sleep (e.g. slept 4 hours), excitement (e.g. hackathon), or feeling overwhelmed, naturally adjust your tone. Keep morning tasks lighter for sleep-deprived queries, and pace the schedule stress-free for overwhelmed queries. Maintain high energy and focus blocks for hackathon/excitement queries. Do not use fake empathy or dramatic wording.
-
-### NATURAL HINGLISH NUMBER PRONUNCIATION:
-- When writing in Hinglish, write numbers and times phonetically in Hindi words when it sounds natural (e.g. use "नौ बजे" instead of "9 baje", "साढ़े दस बजे" instead of "10:30 baje", "एक बजे" instead of "1 PM"). Do not force Hindi vocabulary everywhere, keep conversational flow natural.
-
-### GREETING & CLOSING ROTATION:
-- English: Rotate greetings ('Hey!', 'Good morning!', 'I've organized everything') and closings ('You've got this!', 'Just let me know if anything changes').
-- Hindi: Rotate greetings ('नमस्ते!', 'आपका दिन तैयार है।') and closings ('शुभकामनाएँ।', 'अगर कोई बदलाव करना हो तो बताइएगा।').
-- Hinglish: Rotate greetings ('Bro...', 'Chal...', 'Scene sorted hai.') and closings ('tension mat le, sab sorted hai', 'kuch change ho toh bata dena').
-"""
+from prompts import SYSTEM_PROMPT
 
 RETRY_USER_PROMPT = "Return ONLY valid JSON. The 'voice_narration' must remain in the detected query language (English, Hindi, or Hinglish) without translating it or mixing languages. Preserve the same narration style and tone."
 
@@ -433,6 +399,10 @@ DEFAULT_MOCK_RESPONSE = {
 # ==========================================
 class SwarmRequest(BaseModel):
     query: str = Field(..., description="The user query to be processed by the swarm.")
+
+class TTSRequest(BaseModel):
+    text: str = Field(..., description="The text to convert to speech.")
+    language: str = Field(default="english", description="The language of the text.")
 
 class AgentSchema(BaseModel):
     id: str = Field(..., description="Unique ID for the agent matching React config.")
@@ -944,7 +914,7 @@ async def process_swarm_query(request: SwarmRequest):
         # First attempt with Gemini 2.5 Flash
         inf_start = time.perf_counter()
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-flash-lite-latest",
             contents=query,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -970,13 +940,6 @@ async def process_swarm_query(request: SwarmRequest):
         repaired_json = verbose_validate_and_repair(raw_content_1, attempt_num=1)
         
         if repaired_json:
-            audio_base64 = voice_service.generate_audio_base64(
-                repaired_json.get("voice_narration", ""),
-                repaired_json.get("detected_language", {}).get("language", "english")
-            )
-            repaired_json["audio_base64"] = audio_base64
-            if audio_base64:
-                logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
             total_time = (time.perf_counter() - req_start) * 1000
             logger.info(f"Incoming query: {query}")
             logger.info(f"Detected language: {repaired_json['detected_language']['language']}")
@@ -1008,7 +971,7 @@ async def process_swarm_query(request: SwarmRequest):
         
         inf_start_retry = time.perf_counter()
         retry_response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-flash-lite-latest",
             contents=[query, dynamic_retry_prompt],
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -1034,13 +997,6 @@ async def process_swarm_query(request: SwarmRequest):
         repaired_json_retry = verbose_validate_and_repair(raw_content_2, attempt_num=2)
         
         if repaired_json_retry:
-            audio_base64 = voice_service.generate_audio_base64(
-                repaired_json_retry.get("voice_narration", ""),
-                repaired_json_retry.get("detected_language", {}).get("language", "english")
-            )
-            repaired_json_retry["audio_base64"] = audio_base64
-            if audio_base64:
-                logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
             total_time = (time.perf_counter() - req_start) * 1000
             logger.info(f"Incoming query: {query}")
             logger.info(f"Detected language: {repaired_json_retry['detected_language']['language']}")
@@ -1062,13 +1018,6 @@ async def process_swarm_query(request: SwarmRequest):
         
     total_time = (time.perf_counter() - req_start) * 1000
     fallback_res = get_fallback_response(query)
-    audio_base64 = voice_service.generate_audio_base64(
-        fallback_res.get("voice_narration", ""),
-        fallback_res.get("detected_language", {}).get("language", "english")
-    )
-    fallback_res["audio_base64"] = audio_base64
-    if audio_base64:
-        logger.info(f"Generated Base64 audio size: {len(audio_base64)} characters")
     logger.info(f"Incoming query: {query}")
     logger.info(f"Detected language: {fallback_res['detected_language']['language']}")
     logger.info(f"Normalized language: {fallback_res['detected_language']['language']}")
@@ -1080,6 +1029,22 @@ async def process_swarm_query(request: SwarmRequest):
     logger.info(f"Request completed via fallback. Total request time: {total_time:.2f} ms")
     return fallback_res
 
+@app.post("/api/tts")
+async def generate_tts(request: TTSRequest):
+    try:
+        audio_base64 = voice_service.generate_audio_base64(request.text, request.language)
+        if audio_base64:
+            return {"audio_base64": audio_base64}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to generate audio")
+    except Exception as e:
+        logger.error(f"TTS Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+print('Reloading for Google Calendar')
+
+print('Reloading for .env variables')
