@@ -1,159 +1,195 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Cpu, Activity, ShieldCheck, Zap, Layers, RefreshCw, Terminal, CheckCircle2, Mic } from 'lucide-react'
+import { ArrowLeft, Brain, Cpu, ShieldCheck, Zap, Layers, Activity, Mic, CheckCircle2, Sparkles, Server, Terminal, Radio } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import SwarmLogo from '../components/SwarmLogo'
 
 export default function About() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] selection:bg-[var(--accent)]/30 overflow-hidden">
+    <div className="min-h-screen bg-[#08080a] text-white selection:bg-orange-500/30 font-sans overflow-x-hidden">
       
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 w-full p-6 z-50 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--line)]">
+      {/* ── Fixed Top Navigation Bar ── */}
+      <nav className="fixed top-0 left-0 w-full px-4 sm:px-8 py-3.5 z-50 bg-[#08080a]/90 backdrop-blur-xl border-b border-[#1f2026] flex items-center justify-between">
         <button 
           onClick={() => navigate('/')} 
-          className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors uppercase tracking-widest text-xs font-bold"
+          className="flex items-center gap-2 text-[#9496a1] hover:text-white transition-colors text-xs font-semibold uppercase tracking-wider cursor-pointer"
         >
           <ArrowLeft size={16} />
-          Back to Dashboard
+          <span>Back to Swarm</span>
         </button>
+
+        <div 
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+          onClick={() => navigate('/')}
+          title="Swarm Home"
+        >
+          <div className="w-8 h-8 rounded-full bg-[#16171a] border border-[#27272a] flex items-center justify-center text-white">
+            <SwarmLogo size={18} />
+          </div>
+          <span className="font-bold text-sm text-white tracking-tight">SwarmAssist</span>
+        </div>
       </nav>
 
-      <main className="max-w-[1200px] mx-auto pt-32 px-6 pb-24 relative z-10">
+      {/* ── Main Container ── */}
+      <main className="max-w-[1000px] mx-auto pt-24 sm:pt-28 px-4 sm:px-6 pb-20 relative z-10">
         
-        {/* Hero Section */}
+        {/* ── Hero Title ── */}
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-[800px] mb-24"
+          transition={{ duration: 0.6 }}
+          className="mb-12 text-left space-y-3 border-b border-[#1e1f26] pb-8"
         >
-          <h1 className="text-5xl md:text-6xl font-semibold tracking-tight mb-4 leading-tight">
-            The next era of <br/><span className="text-[var(--accent)]">orchestration.</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[11px] font-semibold tracking-wider uppercase">
+            <Sparkles size={12} />
+            <span>System Architecture & PRD</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+            Sarvam Swarm Intelligence Engine
           </h1>
-          <p className="text-lg text-[var(--text-muted)] leading-relaxed max-w-[600px]">
-            We are moving beyond simple chatbots into an ecosystem of autonomous, proactive, multi-agent systems designed to optimize human potential.
+          <p className="text-xs sm:text-sm text-[#9496a1] leading-relaxed max-w-[680px]">
+            A sequential multi-agent execution pipeline engineered for zero-latency daily scheduling, biometric energy balancing, and localized audio narration.
           </p>
         </motion.div>
 
-        {/* How To Use Section (New Help Guide) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-32"
-        >
-          <h2 className="text-3xl font-bold tracking-tight mb-8 border-b border-[var(--line)] pb-4">How to Use Sarvam Swarm</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 flex flex-col gap-3">
-              <div className="flex items-center gap-3 mb-2">
-                <Terminal size={18} className="text-[var(--text)]" />
-                <h3 className="text-base font-semibold text-[var(--text)]">1. Command the Swarm</h3>
-              </div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed">
-                Type requests like "Plan my day" or "Schedule a 30 min workout" into the main prompt bar. The Swarm automatically breaks your request into parallel tasks.
-              </p>
-            </div>
-
-            <div className="p-6 flex flex-col gap-3 border-l border-[var(--line)]">
-              <div className="flex items-center gap-3 mb-2">
-                <CheckCircle2 size={18} className="text-[var(--text)]" />
-                <h3 className="text-base font-semibold text-[var(--text)]">2. Sync to Calendar</h3>
-              </div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed">
-                Once the agents generate your timeline, click the green "Push to Google Calendar" button. We will automatically schedule push notifications and emails for you.
-              </p>
-            </div>
-
-            <div className="p-6 flex flex-col gap-3 border-l border-[var(--line)]">
-              <div className="flex items-center gap-3 mb-2">
-                <Mic size={18} className="text-[var(--text)]" />
-                <h3 className="text-base font-semibold text-[var(--text)]">3. Voice Orchestration</h3>
-              </div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed">
-                Click "Speak Plan" to hear the Voice Agent dynamically narrate your daily schedule back to you, complete with contextual wellness advice.
-              </p>
+        {/* ── System Status Pill ── */}
+        <div className="mb-10 p-4 rounded-2xl bg-[#121316] border border-[#222329] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <div>
+              <p className="text-xs font-semibold text-white">Swarm Status: All Agents Operational</p>
+              <p className="text-[11px] text-[#71717a]">Latency: &lt; 1.2s · Gemini 2.5 Flash Client</p>
             </div>
           </div>
-        </motion.div>
-
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 auto-rows-[250px]">
-          
-          {/* Bento Item 1: Large Span */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="md:col-span-2 md:row-span-1 rounded-2xl bg-[var(--bg)] border border-[var(--line)] p-6 md:p-8 flex flex-col justify-between hover:border-[var(--line-strong)] transition-colors group relative overflow-hidden"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Layers size={18} className="text-[var(--text)]" />
-              <h3 className="text-base font-semibold">Distributed Swarm Architecture</h3>
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed max-w-[500px]">
-                Unlike standard LLMs, Swarm utilizes multiple expert sub-agents that collaborate securely in real-time to solve complex constraints.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Bento Item 2 */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-2xl bg-[var(--bg)] border border-[var(--line)] p-6 md:p-8 flex flex-col justify-between hover:border-[var(--line-strong)] transition-colors"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Cpu size={18} className="text-[var(--text)]" />
-              <h3 className="text-base font-semibold">Persistent Memory</h3>
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed">
-                Secure PostgreSQL profiling learns your habits and optimal productivity hours over time.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Bento Item 3 */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-2xl bg-[var(--bg)] border border-[var(--line)] p-6 md:p-8 flex flex-col justify-between hover:border-[var(--line-strong)] transition-colors"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <ShieldCheck size={18} className="text-[var(--text)]" />
-              <h3 className="text-base font-semibold">Privacy First</h3>
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed">
-                Enterprise-grade OAuth limits scope access. Your calendar data remains completely yours.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Bento Item 4: Large Span */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="md:col-span-2 md:row-span-1 rounded-2xl bg-[var(--bg)] border border-[var(--line)] p-6 md:p-8 flex flex-col justify-between hover:border-[var(--line-strong)] transition-colors relative overflow-hidden group"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Activity size={18} className="text-[var(--text)]" />
-              <h3 className="text-base font-semibold">Predictive Wellness</h3>
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-[13px] leading-relaxed max-w-[500px]">
-                Burnout detection and intelligent workload balancing dynamically adjust your schedule to protect your mental and physical health.
-              </p>
-            </div>
-          </motion.div>
+          <div className="flex items-center gap-2 text-[11px] text-[#8e8f9a]">
+            <Server size={14} className="text-indigo-400" />
+            <span>v1.0.0 (Build 2026.10)</span>
+          </div>
         </div>
+
+        {/* ── 5-Agent Pipeline Grid (Grok Style) ── */}
+        <div className="mb-12 space-y-4">
+          <h2 className="text-sm font-bold text-[#8e8f9a] uppercase tracking-wider pl-1">
+            Sequential 5-Agent Architecture
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Agent 1 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#121316] border border-[#222329] hover:border-[#33343d] transition-colors flex flex-col justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <Brain size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">1. Orchestrator Agent</h3>
+                  <p className="text-[11px] text-[#71717a]">Intent Parsing & Domain Splitting</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                Ingests raw prompt text, isolates priority constraints, and partitions task queue into 4 domains: Work, Energy, Errands, and Family.
+              </p>
+            </div>
+
+            {/* Agent 2 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#121316] border border-[#222329] hover:border-[#33343d] transition-colors flex flex-col justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+                  <Activity size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">2. Personalization Agent</h3>
+                  <p className="text-[11px] text-[#71717a]">Biometrics & Health Signal Sync</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                Evaluates sleep telemetry, HRV baselines, and historical energy dip patterns to adjust task placement and prevent burnout.
+              </p>
+            </div>
+
+            {/* Agent 3 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#121316] border border-[#222329] hover:border-[#33343d] transition-colors flex flex-col justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Zap size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">3. Task Executor Agent</h3>
+                  <p className="text-[11px] text-[#71717a]">Time-Blocked Schedule Generation</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                Constructs chronological task blocks with precise start times, mandatory 15-minute buffer zones, and calendar protection.
+              </p>
+            </div>
+
+            {/* Agent 4 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#121316] border border-[#222329] hover:border-[#33343d] transition-colors flex flex-col justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">4. Recommendation Agent</h3>
+                  <p className="text-[11px] text-[#71717a]">Energy Boosters & Hydration</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                Detects high-cognitive stress events and auto-injects hydration routines, light exercise, and protein snacks prior to big meetings.
+              </p>
+            </div>
+
+            {/* Agent 5 */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#121316] border border-[#222329] hover:border-[#33343d] transition-colors flex flex-col justify-between gap-3 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <Mic size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">5. Voice Narrator Agent</h3>
+                  <p className="text-[11px] text-[#71717a]">Multilingual Colloquial Speech</p>
+                </div>
+              </div>
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                Synthesizes the plan into a companion-style verbal audio summary supporting English, Hindi, Hinglish, Tamil, Kannada, Telugu, Malayalam, Marathi, Gujarati, Punjabi, and Bengali.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Technical Specifications ── */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-[#121316] border border-[#222329] space-y-4">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <Terminal size={16} className="text-orange-400" />
+            <span>Core System Specs</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-[#9496a1]">
+            <div>
+              <p className="font-semibold text-white mb-1">Inference Engine</p>
+              <p className="text-[11px]">Gemini 2.5 Flash via Google GenAI SDK with 30s timeout architecture</p>
+            </div>
+            <div>
+              <p className="font-semibold text-white mb-1">JSON Recovery</p>
+              <p className="text-[11px]">Regex brace-matching state machine to extract valid JSON objects from unstructured output</p>
+            </div>
+            <div>
+              <p className="font-semibold text-white mb-1">Fault Tolerance</p>
+              <p className="text-[11px]">Multi-tiered prompt retry pipeline + deterministic offline fallback generators</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-12 text-center text-[11px] text-[#555660]">
+          © 2026 Sarvam Swarm · Autonomous Personalized Life Co-Pilot Engine
+        </footer>
 
       </main>
     </div>

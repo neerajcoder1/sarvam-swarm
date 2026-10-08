@@ -486,10 +486,15 @@ export default function Dashboard() {
                   <Menu size={20} />
                 </button>
 
-                <div className="flex items-center gap-3">
+                <div 
+                  className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={handleBackToHome}
+                  title="Return to Swarm Home"
+                >
                   <div className="w-9 h-9 rounded-full bg-[#18181b] border border-[#27272a] flex items-center justify-center text-white">
                     <SwarmLogo size={20} />
                   </div>
+                  <span className="font-semibold text-sm text-white font-sans hidden sm:inline">SwarmAssist</span>
                 </div>
               </div>
 
@@ -753,11 +758,11 @@ export default function Dashboard() {
           >
             {/* Header */}
             <header className="dashboard-header">
-              <div className="logo-group">
+              <div className="logo-group cursor-pointer hover:opacity-80 transition-opacity" onClick={handleBackToHome} title="Return to Swarm Home">
                 <button
                   type="button"
                   className="mobile-menu-trigger mr-1 lg:hidden"
-                  onClick={() => setSidebarOpen(true)}
+                  onClick={(e) => { e.stopPropagation(); setSidebarOpen(true) }}
                   aria-label="Open sidebar"
                 >
                   <Menu size={18} />
