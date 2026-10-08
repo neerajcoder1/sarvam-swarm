@@ -5,7 +5,7 @@ import {
   Bell,
   PlusCircle,
   MessageSquare,
-  Plus, LogOut, Info,
+  Plus, LogOut, Info, HelpCircle,
   ChevronLeft,
   ChevronRight,
   X,
@@ -196,7 +196,7 @@ export default function Sidebar({
             onClick={() => setIsMobileModalOpen(true)}
           >
             <Smartphone size={16} />
-            <span>Get Mobile App</span></button><button type="button" className="sidebar-item-btn w-full hover:bg-[var(--surface-hover)] justify-start font-medium mt-2" onClick={() => navigate("/about")}><Info size={16} /><span>About / Roadmap</span>
+            <span>Get Mobile App</span></button><button type="button" className="sidebar-item-btn w-full hover:bg-[var(--surface-hover)] justify-start font-medium mt-2" onClick={() => navigate("/about")}><HelpCircle size={16} /><span>About & Help</span>
           </button>
 
           <div className="flex flex-row items-center justify-between w-full mt-1">
