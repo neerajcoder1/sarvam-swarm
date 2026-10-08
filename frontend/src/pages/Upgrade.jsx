@@ -69,15 +69,15 @@ export default function Upgrade() {
           </div>
 
           {/* Premium Tier */}
-          <div className="flex flex-col p-8 rounded-3xl bg-[#1c1d21] border border-[#3b3c43] relative overflow-hidden shadow-2xl">
+          <div className="flex flex-col p-8 rounded-3xl bg-[#1c1d21] border border-orange-500/30 hover:border-orange-500/60 transition-colors relative overflow-hidden shadow-2xl">
             {/* Subtle top border glow like ChatGPT Plus */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-red-500" />
             
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-semibold flex items-center gap-2">
-                Sarvam <span className="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">Ultra</span>
+                Sarvam <span className="bg-gradient-to-r from-orange-400 to-red-500 text-transparent bg-clip-text">Ultra</span>
               </h2>
-              <Sparkles size={20} className="text-indigo-400" />
+              <Sparkles size={20} className="text-orange-400" />
             </div>
             
             <div className="flex items-baseline gap-2 mb-2">
@@ -86,7 +86,7 @@ export default function Upgrade() {
             </div>
             <p className="text-[var(--text-muted)] mb-8">For power users who demand maximum performance.</p>
             
-            <button className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors mb-8 shadow-lg shadow-indigo-900/50">
+            <button className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700 transition-colors mb-8 shadow-lg shadow-orange-900/50">
               Upgrade to Ultra
             </button>
 
@@ -96,19 +96,19 @@ export default function Upgrade() {
                 <span className="text-white">Everything in Basic, and:</span>
               </div>
               <div className="flex items-start gap-3">
-                <Check size={20} className="text-indigo-400 mt-0.5" />
+                <Check size={20} className="text-orange-400 mt-0.5" />
                 <span className="text-white">Zero-Latency Voice API</span>
               </div>
               <div className="flex items-start gap-3">
-                <Check size={20} className="text-indigo-400 mt-0.5" />
+                <Check size={20} className="text-orange-400 mt-0.5" />
                 <span className="text-white">Predictive Burnout Detection</span>
               </div>
               <div className="flex items-start gap-3">
-                <Check size={20} className="text-indigo-400 mt-0.5" />
+                <Check size={20} className="text-orange-400 mt-0.5" />
                 <span className="text-white">Continuous Background Agents</span>
               </div>
               <div className="flex items-start gap-3">
-                <Check size={20} className="text-indigo-400 mt-0.5" />
+                <Check size={20} className="text-orange-400 mt-0.5" />
                 <span className="text-white">Apple Watch / Garmin Sync</span>
               </div>
             </div>
