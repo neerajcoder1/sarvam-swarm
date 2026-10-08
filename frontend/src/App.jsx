@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
 import About from './pages/About'
+import Upgrade from './pages/Upgrade'
 import './App.css'
 
 const ProtectedRoute = ({ children }) => {
@@ -31,6 +32,11 @@ export default function App() {
                 <Route path="/about" element={
           <ProtectedRoute>
             <About />
+          </ProtectedRoute>
+        } />
+        <Route path="/upgrade" element={
+          <ProtectedRoute>
+            <Upgrade />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />

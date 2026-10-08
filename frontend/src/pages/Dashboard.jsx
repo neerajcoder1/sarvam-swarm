@@ -19,7 +19,9 @@ const QUICK_SUGGESTIONS = [
   "Tell me about my tasks"
 ]
 
+import { useNavigate } from 'react-router-dom'
 export default function Dashboard() {
+  const navigate = useNavigate()
   const [view, setView] = useState('splash')
   const [swarmMode, setSwarmMode] = useState('Deep Swarm')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false) // 'splash' | 'homepage' | 'loading' | 'dashboard'
@@ -577,7 +579,7 @@ export default function Dashboard() {
                         </button>
                       </div>
                       <div className="p-2 border-t border-[#2c2d33] bg-[#222327]">
-                        <button className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
+                        <button onClick={() => navigate('/upgrade')} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left group">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-white group-hover:text-purple-400 transition-colors">Sarvam Ultra</span>
