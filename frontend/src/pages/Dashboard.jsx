@@ -22,7 +22,10 @@ const QUICK_SUGGESTIONS = [
 import { useNavigate } from 'react-router-dom'
 export default function Dashboard() {
   const navigate = useNavigate()
-  const [view, setView] = useState('splash')
+  const [view, setView] = useState(() => {
+    const hasSeen = sessionStorage.getItem('swarm_has_seen_splash')
+    return hasSeen ? 'homepage' : 'splash'
+  })
   const [swarmMode, setSwarmMode] = useState('Deep Swarm')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false) // 'splash' | 'homepage' | 'loading' | 'dashboard'
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -68,6 +71,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (view === 'splash') {
       const splashTimer = setTimeout(() => {
+        sessionStorage.setItem('swarm_has_seen_splash', 'true')
         setView('homepage')
       }, 3000) // Show splash for 3 seconds
       return () => clearTimeout(splashTimer)
