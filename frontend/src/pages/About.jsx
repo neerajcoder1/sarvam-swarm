@@ -1,130 +1,147 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, Calendar, Network, Database, Heart, ArrowLeft, Target, Shield, Zap } from 'lucide-react'
+import { ArrowLeft, Cpu, Activity, ShieldCheck, Zap, Layers, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function About() {
   const navigate = useNavigate()
-  
-  const roadmapCards = [
-    {
-      icon: <Calendar size={20} className="text-[var(--accent)]" />,
-      title: "Deep Context Awareness",
-      desc: "Full two-way Calendar sync, wearable integrations, and location-aware proactive scheduling."
-    },
-    {
-      icon: <Network size={20} className="text-[var(--accent)]" />,
-      title: "Distributed Swarm",
-      desc: "Async task execution utilizing concurrent reasoning agents for complex multi-step workflows."
-    },
-    {
-      icon: <Database size={20} className="text-[var(--accent)]" />,
-      title: "Persistent Memory",
-      desc: "Secure PostgreSQL-backed profiling to learn your habits, routines, and optimal productivity hours."
-    },
-    {
-      icon: <Heart size={20} className="text-[var(--accent)]" />,
-      title: "Predictive Wellness",
-      desc: "Burnout detection and intelligent workload balancing to maintain your mental and physical health."
-    }
-  ]
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col items-center pt-20 px-6 pb-20">
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-orange-500/30 overflow-hidden">
       
-      {/* Back Button */}
-      <div className="w-full max-w-[1000px] mb-8">
+      {/* Abstract Background Elements */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-500/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none" />
+
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 w-full p-6 z-50 mix-blend-difference">
         <button 
           onClick={() => navigate('/')} 
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--line)] rounded-full text-sm font-semibold transition-all w-fit"
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors uppercase tracking-widest text-xs font-bold"
         >
           <ArrowLeft size={16} />
           Back to Dashboard
         </button>
-      </div>
+      </nav>
 
-      <motion.div 
-        className="max-w-[1000px] w-full"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Header Section */}
-        <div className="mb-16 text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">
-            Sarvam Swarm
+      <main className="max-w-[1200px] mx-auto pt-32 px-6 pb-24 relative z-10">
+        
+        {/* Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-[800px] mb-24"
+        >
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
+            The next era of <br/><span className="text-orange-500">orchestration.</span>
           </h1>
-          <p className="text-xl text-[var(--text-muted)] max-w-3xl mx-auto leading-relaxed">
-            We are moving beyond simple chatbots into an era of autonomous, proactive, multi-agent systems. Sarvam Swarm is your personal, intelligent Life Co-Pilot engineered to optimize human potential.
+          <p className="text-xl md:text-2xl text-white/50 leading-relaxed font-light max-w-[600px]">
+            We are moving beyond simple chatbots into an ecosystem of autonomous, proactive, multi-agent systems designed to optimize human potential.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Why We Built This Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="p-8 rounded-3xl bg-[var(--surface)] border border-[var(--line)] hover:border-blue-500/30 transition-all flex flex-col items-center text-center">
-            <div className="p-4 rounded-full bg-blue-500/10 mb-6 text-blue-400">
-              <Target size={32} />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Our Mission</h3>
-            <p className="text-[var(--text-muted)]">To eliminate decision fatigue by delegating schedule planning and daily task orchestration to a hyper-intelligent swarm of specialized AI agents.</p>
-          </div>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 auto-rows-[250px]">
           
-          <div className="p-8 rounded-3xl bg-[var(--surface)] border border-[var(--line)] hover:border-indigo-500/30 transition-all flex flex-col items-center text-center">
-            <div className="p-4 rounded-full bg-indigo-500/10 mb-6 text-indigo-400">
-              <Zap size={32} />
+          {/* Bento Item 1: Large Span */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="md:col-span-2 md:row-span-1 rounded-3xl bg-[#111111] border border-white/10 p-8 flex flex-col justify-between hover:border-orange-500/30 transition-colors group relative overflow-hidden"
+          >
+            <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[50px] group-hover:bg-orange-500/10 transition-colors" />
+            <div className="p-3 bg-white/5 w-fit rounded-xl border border-white/10 mb-4 text-orange-400">
+              <Layers size={24} />
             </div>
-            <h3 className="text-xl font-bold mb-3">The Architecture</h3>
-            <p className="text-[var(--text-muted)]">Unlike standard LLMs, Swarm utilizes multiple expert sub-agents (Orchestrator, Execution, Voice) that collaborate securely in real-time to solve complex constraints.</p>
-          </div>
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight mb-2">Distributed Swarm Architecture</h3>
+              <p className="text-white/50 leading-relaxed max-w-[400px]">
+                Unlike standard LLMs, Swarm utilizes multiple expert sub-agents that collaborate securely in real-time to solve complex constraints.
+              </p>
+            </div>
+          </motion.div>
 
-          <div className="p-8 rounded-3xl bg-[var(--surface)] border border-[var(--line)] hover:border-purple-500/30 transition-all flex flex-col items-center text-center">
-            <div className="p-4 rounded-full bg-purple-500/10 mb-6 text-purple-400">
-              <Shield size={32} />
+          {/* Bento Item 2 */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-3xl bg-[#111111] border border-white/10 p-8 flex flex-col justify-between hover:border-white/20 transition-colors"
+          >
+            <div className="p-3 bg-white/5 w-fit rounded-xl border border-white/10 mb-4 text-blue-400">
+              <Cpu size={24} />
             </div>
-            <h3 className="text-xl font-bold mb-3">Privacy First</h3>
-            <p className="text-[var(--text-muted)]">Your data belongs to you. By utilizing secure enterprise-grade OAuth architectures and strict environment separation, your personal calendar data is fully protected.</p>
-          </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight mb-2">Persistent Memory</h3>
+              <p className="text-white/50 text-sm leading-relaxed">
+                Secure PostgreSQL profiling learns your habits and optimal productivity hours over time.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Bento Item 3 */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-3xl bg-[#111111] border border-white/10 p-8 flex flex-col justify-between hover:border-white/20 transition-colors"
+          >
+            <div className="p-3 bg-white/5 w-fit rounded-xl border border-white/10 mb-4 text-emerald-400">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight mb-2">Privacy First</h3>
+              <p className="text-white/50 text-sm leading-relaxed">
+                Enterprise-grade OAuth limits scope access. Your calendar data remains completely yours.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Bento Item 4: Large Span */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="md:col-span-2 md:row-span-1 rounded-3xl bg-[#111111] border border-white/10 p-8 flex flex-col justify-between hover:border-blue-500/30 transition-colors relative overflow-hidden group"
+          >
+            <div className="absolute left-0 bottom-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[50px] group-hover:bg-blue-500/10 transition-colors" />
+            <div className="p-3 bg-white/5 w-fit rounded-xl border border-white/10 mb-4 text-blue-400">
+              <Activity size={24} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight mb-2">Predictive Wellness</h3>
+              <p className="text-white/50 leading-relaxed max-w-[400px]">
+                Burnout detection and intelligent workload balancing dynamically adjust your schedule to protect your mental and physical health.
+              </p>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Future Roadmap Section */}
-        <div className="rounded-3xl bg-[var(--surface)] border border-[var(--line)] p-8 md:p-12">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="p-3 rounded-xl bg-[var(--surface-hover)] border border-[var(--line)]">
-              <TrendingUp size={24} className="text-white" />
+        {/* Vision Statement */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-32 text-center"
+        >
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-8">
+            Engineering intelligence.
+          </h2>
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm text-white/70">
+              <Zap size={14} className="text-orange-400" />
+              Zero Latency Inference
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">The Future Roadmap</h2>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm text-white/70">
+              <RefreshCw size={14} className="text-blue-400" />
+              Continuous Async Execution
+            </div>
           </div>
+        </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {roadmapCards.map((card, idx) => (
-              <motion.div 
-                key={idx}
-                className="flex flex-col p-6 rounded-2xl bg-[var(--bg)] border border-[var(--line)] hover:border-[var(--line-strong)] transition-colors"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 rounded-lg bg-[var(--surface)] border border-[var(--line)]">
-                    {card.icon}
-                  </div>
-                  <h3 className="font-bold text-lg">{card.title}</h3>
-                </div>
-                <p className="text-[var(--text-muted)] leading-relaxed">
-                  {card.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Footer */}
-        <div className="mt-16 text-center mb-8">
-            <p className="text-sm font-semibold tracking-widest uppercase text-[var(--text-muted)]">
-              Ac 2026 Sarvam Swarm Lite
-            </p>
-        </div>
-        
-      </motion.div>
+      </main>
     </div>
   )
 }
