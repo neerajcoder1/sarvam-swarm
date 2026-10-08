@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Heart, Flame, Crown, ChevronDown, Check } from 'lucide-react'
+import { Mic, Send, Sparkles, Brain, Volume2, Play, Square, Info, Plus, Menu, Zap, Heart, Flame, Crown, ChevronDown, Check, X } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 import ThemeToggle from '../components/ThemeToggle'
 import SwarmLogo from '../components/SwarmLogo'
@@ -546,7 +546,15 @@ export default function Dashboard() {
                   
                   {isDropdownOpen && (
                     <div className="absolute bottom-full right-0 mb-3 w-[240px] bg-[#1a1b1e] border border-[#2c2d33] rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
-                      <div className="p-2 flex flex-col gap-1">
+                      <div className="p-2 flex justify-end">
+                        <button 
+                          onClick={() => setIsDropdownOpen(false)} 
+                          className="p-1 hover:bg-[#2c2d33] rounded-md transition-colors text-[var(--text-muted)] hover:text-white"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <div className="p-2 flex flex-col gap-1 pt-0">
                         <button onClick={() => { setSwarmMode('Lightning'); setIsDropdownOpen(false) }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2c2d33] transition-colors w-full text-left relative">
                           <Zap size={18} className="text-[var(--text-muted)]" />
                           <span className="font-semibold text-white">Lightning</span>
