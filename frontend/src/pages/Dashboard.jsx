@@ -534,14 +534,14 @@ export default function Dashboard() {
                   <button 
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="model-chip hidden md:flex hover:bg-[var(--surface-hover)] cursor-pointer transition-colors border border-[var(--line)]"
+                    className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl hover:bg-[#2c2d33] cursor-pointer transition-all text-[var(--text-muted)] hover:text-white text-sm font-medium"
                   >
                     {swarmMode === 'Lightning' && <Zap size={14} className="text-yellow-500" />}
-                    {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-500" />}
-                    {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-500" />}
-                    {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-500" />}
-                    <span className="font-semibold">{swarmMode}</span>
-                    <ChevronDown size={14} className="text-[var(--text-muted)] ml-1" />
+                    {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-400" />}
+                    {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-400" />}
+                    {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-400" />}
+                    <span>{swarmMode}</span>
+                    <ChevronDown size={14} className="opacity-50 ml-0.5" />
                   </button>
                   
                   {isDropdownOpen && (
