@@ -58,34 +58,50 @@ def get_auth_url(current_user: models.User = Depends(auth_router.get_current_use
 
 @router.get("/callback")
 def google_callback(state: str, code: str, request: Request, db: Session = Depends(get_db)):
-    flow = get_google_flow()
+    import requests
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
     
-    # Reconstruct the full URL to fetch the token
-    # FastAPI might strip the query string in flow.fetch_token if we don't pass the exact URL
-    flow.fetch_token(authorization_response=str(request.url))
+    # Exchange code for token manually to avoid PKCE missing state error
+    data = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": REDIRECT_URI
+    }
+    r = requests.post("https://oauth2.googleapis.com/token", data=data)
+    if not r.ok:
+        raise HTTPException(status_code=400, detail=f"Failed to get token: {r.text}")
     
-    credentials = flow.credentials
+    token_response = r.json()
     
-    # The state variable holds the user_id we passed
     user_id = int(state)
     user = db.query(models.User).filter(models.User.id == user_id).first()
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
         
-    # Save the refresh token to the database
     token_data = {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': credentials.scopes
+        'token': token_response.get('access_token'),
+        'refresh_token': token_response.get('refresh_token'),
+        'token_uri': "https://oauth2.googleapis.com/token",
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'scopes': SCOPES
     }
+    
+    # If the user already had a refresh token, preserve it if Google didn't send a new one
+    if not token_data['refresh_token'] and user.google_token:
+        try:
+            old_data = json.loads(user.google_token)
+            token_data['refresh_token'] = old_data.get('refresh_token')
+        except:
+            pass
+            
     user.google_token = json.dumps(token_data)
     db.commit()
     
-    # Redirect back to the frontend dashboard
     return RedirectResponse(os.getenv("FRONTEND_URL", "http://localhost:5173") + "/?calendar_connected=true")
 
 @router.get("/events")
