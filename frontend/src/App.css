@@ -1532,8 +1532,18 @@
     left: 0;
     top: 0;
     width: 280px;
+    /* 100dvh = dynamic viewport height, excludes browser chrome/address bar */
+    height: 100dvh;
     transform: translateX(-100%);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+    /* iOS safe area: ensures profile btn clears home indicator */
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+  }
+
+  /* Bottom section (profile + mobile app) must never be squished offscreen */
+  .permanent-sidebar > div:last-child {
+    flex-shrink: 0 !important;
   }
 
   .permanent-sidebar.open {
