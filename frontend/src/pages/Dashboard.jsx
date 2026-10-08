@@ -505,30 +505,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* ── Mobile-only: horizontal mode chips ─────────────────── */}
-              <div className="flex sm:hidden w-full overflow-x-auto gap-2 pb-1 no-scrollbar px-1">
-                {[
-                  { id: 'Lightning',    icon: <Zap    size={13} className="text-yellow-500" />, label: 'Lightning'  },
-                  { id: 'Deep Swarm',   icon: <Brain  size={13} className="text-blue-400"   />, label: 'Deep Swarm' },
-                  { id: 'Wellness Mode',icon: <Heart  size={13} className="text-pink-400"   />, label: 'Wellness'   },
-                  { id: 'Hustle Mode',  icon: <Flame  size={13} className="text-orange-400" />, label: 'Hustle'     },
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setSwarmMode(m.id)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all border ${
-                      swarmMode === m.id
-                        ? 'bg-[#2c2d33] border-[var(--accent)] text-white'
-                        : 'bg-transparent border-[rgba(255,255,255,0.1)] text-[var(--text-muted)] hover:text-white'
-                    }`}
-                  >
-                    {m.icon}
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-
               <div className="main-input-bar relative">
                 <button
                   type="button"
@@ -574,8 +550,8 @@ export default function Dashboard() {
                     {swarmMode === 'Deep Swarm' && <Brain size={14} className="text-blue-400" />}
                     {swarmMode === 'Wellness Mode' && <Heart size={14} className="text-pink-400" />}
                     {swarmMode === 'Hustle Mode' && <Flame size={14} className="text-orange-400" />}
-                    {/* Show label only on md+, icon-only on mobile */}
-                    <span className="hidden sm:inline">{swarmMode}</span>
+                    {/* Show label on all screen sizes */}
+                    <span>{swarmMode}</span>
                     <ChevronDown size={14} className="opacity-50 ml-0.5" />
                   </button>
                   
