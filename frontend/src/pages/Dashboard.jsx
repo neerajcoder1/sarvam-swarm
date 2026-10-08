@@ -20,6 +20,15 @@ const QUICK_SUGGESTIONS = [
   "Tell me about my tasks"
 ]
 
+const DYNAMIC_PLACEHOLDERS = [
+  "Type / or ask anything...",
+  "Plan my day & schedule...",
+  "Suggest a healthy lunch near me...",
+  "How can I optimize my energy today?...",
+  "Schedule a 30-min relaxation break...",
+  "Tell me about my tasks & priorities..."
+]
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const [view, setView] = useState(() => {
@@ -30,6 +39,14 @@ export default function Dashboard() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false) // 'splash' | 'homepage' | 'loading' | 'dashboard'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % DYNAMIC_PLACEHOLDERS.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
   
   const [chatHistory, setChatHistory] = useState(() => {
     const saved = localStorage.getItem('swarm_chat_history')
@@ -533,13 +550,13 @@ export default function Dashboard() {
                 {/* Grok-Style Input Card */}
                 <div className="grok-input-card relative w-full bg-[#18181b] border border-[#27272a] rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-4 shadow-2xl flex flex-col gap-3 transition-all focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--accent-ring)]">
                   
-                  {/* Top: Text Area / Field */}
+                  {/* Top: Text Area / Field with Dynamic Rotating Placeholder */}
                   <input
                     type="text"
-                    className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg placeholder-[#6e6f7a] px-1 font-sans focus:outline-none focus:ring-0"
+                    className="w-full bg-transparent border-none outline-none text-white text-base sm:text-lg placeholder-[#6e6f7a] px-1 font-sans focus:outline-none focus:ring-0 transition-all duration-300"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type / or ask anything..."
+                    placeholder={DYNAMIC_PLACEHOLDERS[placeholderIndex]}
                     onKeyDown={(e) => e.key === 'Enter' && handleStartSwarm()}
                     disabled={isListening}
                   />
