@@ -31,6 +31,7 @@ const INITIAL_CHAT_HISTORY = [
 ]
 
 export default function Sidebar({
+
   onSelectAction,
   onNewConversation,
   onToast,
@@ -42,6 +43,8 @@ export default function Sidebar({
   activeChatId,
   onSelectHistory
 }) {
+  const username = localStorage.getItem('swarm_username') || 'User'
+  const firstName = username.split(' ')[0]
   const navigate = useNavigate();
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
 
