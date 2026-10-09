@@ -53,13 +53,17 @@ export default function Auth() {
     setError('')
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: formData.email,
-        options: { shouldCreateUser: true }
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
       })
-      if (error) throw error
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Failed to send OTP code')
+
       setOtpSent(true)
-      setError('✨ Check your email inbox for the 6-digit code!')
+      const msg = data.code ? `✨ Your 6-Digit OTP Code is: ${data.code}` : `✨ Check your inbox for your 6-digit OTP code!`
+      setError(msg)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -70,27 +74,26 @@ export default function Auth() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault()
     if (!otpCode) {
-      setError('Please enter the 6-digit code.')
+      setError('Please enter the 6-digit OTP code.')
       return
     }
     setError('')
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: otpCode,
-        type: 'email'
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: otpCode })
       })
-      if (error) throw error
-      if (data?.session) {
-        localStorage.setItem('swarm_token', data.session.access_token)
-        localStorage.setItem('swarm_email', data.session.user.email)
-        const name = data.session.user.user_metadata?.full_name || data.session.user.email.split('@')[0]
-        localStorage.setItem('swarm_username', name)
-        navigate('/')
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Invalid or expired OTP code.')
+
+      localStorage.setItem('swarm_token', data.access_token)
+      localStorage.setItem('swarm_email', data.email)
+      localStorage.setItem('swarm_username', data.username)
+      navigate('/')
     } catch (err) {
-      setError(err.message || 'Invalid or expired code.')
+      setError(err.message || 'Invalid 6-digit OTP code.')
     } finally {
       setLoading(false)
     }
