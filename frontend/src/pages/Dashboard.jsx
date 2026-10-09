@@ -14,11 +14,11 @@ import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
 import { speakText, cancelSpeech, createSpeechRecognition } from '../agents/speech'
 import { runSwarmOrchestration } from '../agents/orchestrator'
 const QUICK_SUGGESTIONS = [
+  "⚡ Executive Brain Dump",
   "Plan my day",
   "What's my schedule today?",
   "Suggest a healthy lunch near me",
-  "Add 30 min break",
-  "Tell me about my tasks"
+  "Add 30 min break"
 ]
 
 const DYNAMIC_PLACEHOLDERS = [
@@ -428,6 +428,19 @@ export default function Dashboard() {
     localStorage.removeItem('swarm_chat_history')
     handleBackToHome()
     triggerToast("Cleared all history")
+  }
+
+  const handleEmergencyRestructure = () => {
+    setTasksList((prev) => [
+      ...prev,
+      {
+        time: '4:15 PM',
+        title: 'Emergency Decompression Block',
+        description: '15-min mental reset & hydration block injected by Swarm Restructure Engine',
+        status: 'done'
+      }
+    ])
+    triggerToast('🚨 Added 15-min emergency rest block and padded schedule!')
   }
 
   const activeAgent = agentsData.find((a) => a.id === selectedAgentId)
@@ -889,6 +902,7 @@ export default function Dashboard() {
                         onStop={stopVoiceSpeech}
                         voiceNarration={voiceNarrationData}
                         onToast={triggerToast}
+                        onRestructure={handleEmergencyRestructure}
                       />
                     </div>
 
@@ -899,7 +913,7 @@ export default function Dashboard() {
             </main>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>
 
       {/* Agent Trace Overlay Panel */}
       <AnimatePresence>
