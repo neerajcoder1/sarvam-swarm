@@ -3,6 +3,7 @@ import { Settings, HelpCircle, Zap, LogOut, Check, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
+import { supabase } from '../lib/supabase'
 
 export default function ProfileMenu({ userEmail, firstName, onOpenSettings }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -18,6 +19,19 @@ export default function ProfileMenu({ userEmail, firstName, onOpenSettings }) {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  const handleSignOut = async () => {
+    setIsOpen(false)
+    localStorage.removeItem('swarm_token')
+    localStorage.removeItem('swarm_email')
+    localStorage.removeItem('swarm_username')
+    try {
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error("Supabase signOut error:", err)
+    }
+    window.location.href = '/auth'
+  }
 
   return (
     <div className="relative w-full mt-2" ref={menuRef}>
@@ -76,11 +90,7 @@ export default function ProfileMenu({ userEmail, firstName, onOpenSettings }) {
               </div>
               <button 
                 className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-500/10 hover:text-red-400 transition-colors text-[var(--text-muted)] text-sm mt-1"
-                onClick={() => {
-                  localStorage.removeItem('swarm_token')
-                  localStorage.removeItem('swarm_email')
-                  window.location.href = '/'
-                }}
+                onClick={handleSignOut}
               >
                 <LogOut size={16} />
                 <span>Sign Out</span>
