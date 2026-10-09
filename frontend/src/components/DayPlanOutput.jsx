@@ -66,6 +66,27 @@ export default function DayPlanOutput({
     }
   }
 
+  const parseTimeToICSDate = (timeStr, offsetMinutes = 0) => {
+    const now = new Date()
+    let hours = 9
+    let minutes = 0
+
+    if (timeStr) {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i)
+      if (match) {
+        hours = parseInt(match[1], 10)
+        minutes = parseInt(match[2], 10)
+        const ampm = match[3].toUpperCase()
+        if (ampm === 'PM' && hours < 12) hours += 12
+        if (ampm === 'AM' && hours === 12) hours = 0
+      }
+    }
+
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes + offsetMinutes)
+    const pad = (n) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`
+  }
+
   const handleExportICS = () => {
     try {
       const todayStr = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
@@ -78,10 +99,15 @@ export default function DayPlanOutput({
       ]
 
       tasks.forEach((t, i) => {
+        const dtStart = parseTimeToICSDate(t.time, 0)
+        const dtEnd = parseTimeToICSDate(t.time, 30)
+
         icsContent.push(
           'BEGIN:VEVENT',
           `UID:swarm-${Date.now()}-${i}@swarmassist.ai`,
           `DTSTAMP:${todayStr}`,
+          `DTSTART:${dtStart}`,
+          `DTEND:${dtEnd}`,
           `SUMMARY:${t.title}`,
           `DESCRIPTION:${t.description}`,
           `STATUS:CONFIRMED`,
@@ -97,7 +123,7 @@ export default function DayPlanOutput({
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      if (onToast) onToast("📥 Downloaded .ics file — tap to open in Apple/Google/Outlook Calendar!")
+      if (onToast) onToast("📥 Downloaded .ics file — tap Add to calendar in Outlook!")
     } catch (err) {
       console.error(err)
     }
