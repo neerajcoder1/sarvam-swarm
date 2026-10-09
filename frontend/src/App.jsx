@@ -8,6 +8,8 @@ import Upgrade from './pages/Upgrade'
 import ColdStartLoader from './components/ColdStartLoader'
 import './App.css'
 
+import { supabase } from './lib/supabase'
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const PING_INTERVAL_MS = 3000
 
@@ -19,6 +21,18 @@ const ProtectedRoute = ({ children }) => {
 
 export default function App() {
   const [backendReady, setBackendReady] = useState(false)
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        localStorage.setItem('swarm_token', session.access_token)
+        localStorage.setItem('swarm_email', session.user.email || 'user@example.com')
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
+        localStorage.setItem('swarm_username', name)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem('sarvam-swarm-theme')
