@@ -9,6 +9,7 @@ import SwarmAgentCard from '../components/SwarmAgentCard'
 import AgentTracePanel from '../components/AgentTracePanel'
 import DayPlanOutput from '../components/DayPlanOutput'
 import SwarmCapabilities from '../components/SwarmCapabilities'
+import SettingsModal from '../components/SettingsModal'
 import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
 import { speakText, cancelSpeech, createSpeechRecognition } from '../agents/speech'
 import { runSwarmOrchestration } from '../agents/orchestrator'
@@ -70,6 +71,7 @@ export default function Dashboard() {
   const [predictionAdded, setPredictionAdded] = useState(false)
   const [predictiveMode, setPredictiveMode] = useState(false)
   const [toastMessage, setToastMessage] = useState(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [profileLoaded, setProfileLoaded] = useState(() => {
     return localStorage.getItem('sarwam_profile_loaded') === 'true'
   })
@@ -444,6 +446,7 @@ export default function Dashboard() {
           onSelectHistory={handleSelectHistory}
           onDeleteHistory={handleDeleteHistory}
           onClearHistory={handleClearAllHistory}
+          onOpenSettings={() => setIsSettingsOpen(true)}
           onSelectAction={(promptText) => {
             setSidebarCollapsed(true)
             setSidebarOpen(false)
@@ -923,6 +926,13 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Phase 2 Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onToast={triggerToast}
+      />
 
             {view !== 'splash' && (
         <footer className="flex flex-col gap-1 items-center justify-center py-4 w-full z-10">

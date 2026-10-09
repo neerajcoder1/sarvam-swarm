@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
 
-export default function ProfileMenu({ userEmail, firstName }) {
+export default function ProfileMenu({ userEmail, firstName, onOpenSettings }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
   const navigate = useNavigate()
@@ -53,7 +53,7 @@ export default function ProfileMenu({ userEmail, firstName }) {
 
             {/* Menu Links */}
             <div className="py-2">
-              <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)] text-sm" onClick={() => { setIsOpen(false); alert("Settings coming in Phase 2!") }}>
+              <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-[var(--surface-hover)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)] text-sm" onClick={() => { setIsOpen(false); if (onOpenSettings) onOpenSettings(); }}>
                 <Settings size={16} />
                 <span>Settings</span>
               </button>

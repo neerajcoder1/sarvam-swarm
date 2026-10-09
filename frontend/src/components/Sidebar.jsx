@@ -35,7 +35,8 @@ export default function Sidebar({
   activeChatId,
   onSelectHistory,
   onDeleteHistory,
-  onClearHistory
+  onClearHistory,
+  onOpenSettings
 }) {
   const username = localStorage.getItem('swarm_username') || 'User'
   const firstName = username.split(' ')[0]
@@ -225,7 +226,7 @@ export default function Sidebar({
             <span>Get Mobile App</span>
           </button>
 
-          <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} />
+          <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} onOpenSettings={onOpenSettings} />
         </div>
       </aside>
 
