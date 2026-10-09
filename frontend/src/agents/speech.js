@@ -65,28 +65,46 @@ export const speakText = (text, voiceSettings, onStart, onEnd, onError, audioDat
   fallbackToBrowserTTS(text, actualSettings, actualOnStart, actualOnEnd, actualOnError);
 }
 
+let activeSentenceCanceller = null
+
 const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, actualOnError) => {
   if (!('speechSynthesis' in window)) {
     if (actualOnError) actualOnError('Speech synthesis not supported')
     return
   }
+  
+  if (activeSentenceCanceller) {
+    activeSentenceCanceller()
+    activeSentenceCanceller = null
+  }
   window.speechSynthesis.cancel()
+
+  // Clean and split paragraph into natural conversational sentences
+  const sentences = text
+    .split(/(?<=[.!?।\n])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+
+  if (sentences.length === 0) {
+    if (actualOnEnd) actualOnEnd()
+    return
+  }
 
   // Extract parameters from voice_settings
   const locale = actualSettings?.locale || 'en-US'
   const gender = actualSettings?.gender || 'female'
-  const speakingRate = actualSettings?.speaking_rate !== undefined ? actualSettings.speaking_rate : 1.0
+  // Relax speaking rate to 0.92 for natural human cadence (prevents rushed monotone reading)
+  const speakingRate = actualSettings?.speaking_rate !== undefined ? actualSettings.speaking_rate : 0.92
   const pitch = actualSettings?.pitch !== undefined ? actualSettings.pitch : 1.0
-
   const voiceNamePref = actualSettings?.voiceName || actualSettings?.voice_name
 
-  console.log('--- TTS Debug Log Start ---')
-  console.log('Received voice_settings:', actualSettings)
+  let currentIndex = 0
+  let isCancelled = false
 
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = locale
-  utterance.rate = speakingRate
-  utterance.pitch = pitch
+  activeSentenceCanceller = () => {
+    isCancelled = true
+    window.speechSynthesis.cancel()
+  }
 
   // Helper to identify female voice indicators
   const isFemaleVoice = (voiceName) => {
@@ -107,16 +125,26 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
            lowerName.includes('kalpana')
   }
 
-  const selectVoiceAndSpeak = () => {
+  const speakNextSentence = () => {
+    if (isCancelled || currentIndex >= sentences.length) {
+      activeSentenceCanceller = null
+      if (actualOnEnd && !isCancelled) actualOnEnd()
+      return
+    }
+
+    const currentText = sentences[currentIndex]
+    const utterance = new SpeechSynthesisUtterance(currentText)
+    utterance.lang = locale
+    utterance.rate = speakingRate
+    utterance.pitch = pitch
+
     const voices = window.speechSynthesis.getVoices()
     
     // Filter matching voices by locale
     const getVoicesForLocale = (targetLocale) => {
       const targetLower = targetLocale.toLowerCase()
-      // First try exact match
       let matches = voices.filter(v => v.lang.toLowerCase() === targetLower || v.lang.toLowerCase().replace('_', '-') === targetLower)
       if (matches.length === 0) {
-        // Try prefix match (e.g. 'en-IN' -> check if start with 'en-')
         const prefix = targetLower.split('-')[0]
         matches = voices.filter(v => v.lang.toLowerCase().startsWith(prefix))
       }
@@ -125,31 +153,22 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
 
     let localeVoices = getVoicesForLocale(locale)
 
-    // Fallback if no matching voices for locale
     if (localeVoices.length === 0) {
-      console.log(`No exact or prefix voices found for locale ${locale}. Trying fallback locales...`)
       const fallbacks = ['en-in', 'hi-in', 'en-us']
       for (const fb of fallbacks) {
         if (fb.toLowerCase() !== locale.toLowerCase()) {
           localeVoices = getVoicesForLocale(fb)
-          if (localeVoices.length > 0) {
-            console.log(`Gracefully falling back to matching voices from fallback locale: ${fb}`)
-            break
-          }
+          if (localeVoices.length > 0) break
         }
       }
     }
 
-    console.log('Available matching voices:', localeVoices.map(v => v.name))
-
     let selectedVoice = null
     
-    // Priority 1: User explicitly selected system voice name
     if (voiceNamePref && voices.length > 0) {
       selectedVoice = voices.find(v => v.name === voiceNamePref || v.name.toLowerCase().includes(voiceNamePref.toLowerCase()))
     }
 
-    // Priority 2: Locale + Gender match
     if (!selectedVoice && localeVoices.length > 0) {
       const isFemalePref = gender.toLowerCase() === 'female'
       const genderMatches = localeVoices.filter(v => isFemaleVoice(v.name) === isFemalePref)
@@ -160,7 +179,6 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
       }
     }
 
-    // Priority 3: Fallback English or any voice
     if (!selectedVoice) {
       const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'))
       if (enVoices.length > 0) {
@@ -173,41 +191,46 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
     if (selectedVoice) {
       utterance.voice = selectedVoice
       utterance.lang = selectedVoice.lang
-      console.log('Selected speechSynthesis voice:', selectedVoice.name)
-    } else {
-      console.log('No specific voice found, using browser default.')
     }
 
-    console.log('Utterance.lang set to:', utterance.lang)
-    console.log('--- TTS Debug Log End ---')
+    if (currentIndex === 0 && actualOnStart) {
+      actualOnStart()
+    }
 
-    if (actualOnStart) utterance.onstart = actualOnStart
-    if (actualOnEnd) utterance.onend = actualOnEnd
-    if (actualOnError) {
-      utterance.onerror = actualOnError
-    } else {
-      utterance.onerror = () => {
-        if (actualOnEnd) actualOnEnd()
-      }
+    utterance.onend = () => {
+      currentIndex++
+      // Natural 220ms breathing pause between sentences
+      setTimeout(() => {
+        if (!isCancelled) speakNextSentence()
+      }, 220)
+    }
+
+    utterance.onerror = (e) => {
+      console.warn("Sentence utterance error:", e)
+      currentIndex++
+      if (!isCancelled) speakNextSentence()
     }
 
     window.speechSynthesis.speak(utterance)
   }
 
-  // Handle Chrome/Edge where getVoices() returns empty array initially
   const voices = window.speechSynthesis.getVoices()
   if (voices.length === 0) {
     const handleVoicesChanged = () => {
-      selectVoiceAndSpeak()
+      speakNextSentence()
       window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged)
     }
     window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged)
   } else {
-    selectVoiceAndSpeak()
+    speakNextSentence()
   }
 }
 
 export const cancelSpeech = () => {
+  if (activeSentenceCanceller) {
+    activeSentenceCanceller()
+    activeSentenceCanceller = null
+  }
   if (currentAudioElement) {
     currentAudioElement.pause();
     currentAudioElement.src = "";
