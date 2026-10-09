@@ -215,12 +215,8 @@ export default function Auth() {
             <div className="h-px bg-white/10 flex-1" />
           </div>
 
-          {/* Fake OAuth Buttons to match Grok Design */}
+          {/* OAuth Provider */}
           <div className="w-full flex flex-col gap-3 mb-8">
-            <button className="w-full flex items-center justify-center gap-3 py-3.5 border border-white/20 rounded-full hover:bg-white/5 transition-colors text-[14px] font-medium text-white/90" onClick={(e) => e.preventDefault()}>
-              <span className="w-4 h-4 rounded-full border border-white/50 flex items-center justify-center text-[10px] font-bold">A</span> 
-              Continue with Apple
-            </button>
             <button type="button" onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-3 py-3.5 border border-white/20 rounded-full hover:bg-white/5 transition-colors text-[14px] font-medium text-white/90">
               <span className="w-4 h-4 rounded-full border-[2px] border-blue-400 border-t-red-400 border-l-yellow-400 border-b-green-400"></span> 
               Continue with Google
