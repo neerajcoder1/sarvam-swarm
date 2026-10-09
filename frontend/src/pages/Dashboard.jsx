@@ -888,6 +888,7 @@ export default function Dashboard() {
                         onPlay={() => triggerVoiceSpeech(voiceNarrationData, voiceSettings, audioData)}
                         onStop={stopVoiceSpeech}
                         voiceNarration={voiceNarrationData}
+                        onToast={triggerToast}
                       />
                     </div>
 
