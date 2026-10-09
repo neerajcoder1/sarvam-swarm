@@ -23,6 +23,23 @@ const QUICK_ACTIONS = [
   { id: 'reminders', label: 'Set reminders', icon: Bell, prompt: 'Set reminders for today' }
 ]
 
+const formatUserDisplayName = (raw) => {
+  if (!raw) return 'User'
+  const nameWithoutDomain = raw.split('@')[0]
+  const cleanName = nameWithoutDomain.replace(/\d+$/, '')
+  
+  if (cleanName.toLowerCase() === 'neerajgahlout') return 'Neeraj Gahlout'
+  if (cleanName.toLowerCase() === 'dhirajgahlout') return 'Dhiraj Gahlout'
+  
+  return cleanName
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[._-]/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export default function Sidebar({
   onSelectAction,
   onNewConversation,
@@ -38,7 +55,8 @@ export default function Sidebar({
   onClearHistory,
   onOpenSettings
 }) {
-  const username = localStorage.getItem('swarm_username') || 'User'
+  const rawUsername = localStorage.getItem('swarm_username') || localStorage.getItem('swarm_email') || 'User'
+  const username = formatUserDisplayName(rawUsername)
   const firstName = username.split(' ')[0]
   const navigate = useNavigate()
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
@@ -226,7 +244,7 @@ export default function Sidebar({
             <span>Get Mobile App</span>
           </button>
 
-          <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={firstName} onOpenSettings={onOpenSettings} />
+          <ProfileMenu userEmail={localStorage.getItem('swarm_email')} firstName={username} onOpenSettings={onOpenSettings} />
         </div>
       </aside>
 
