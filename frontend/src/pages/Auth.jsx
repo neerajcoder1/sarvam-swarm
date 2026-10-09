@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import SwarmLogo from '../components/SwarmLogo'
 import LegalModal from '../components/LegalModal'
+import { supabase } from '../lib/supabase'
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
@@ -14,6 +15,24 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [legalConfig, setLegalConfig] = useState({ isOpen: false, type: 'terms' })
   const navigate = useNavigate()
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleToggle = () => {
     setIsLogin(!isLogin)
@@ -202,7 +221,7 @@ export default function Auth() {
               <span className="w-4 h-4 rounded-full border border-white/50 flex items-center justify-center text-[10px] font-bold">A</span> 
               Continue with Apple
             </button>
-            <button className="w-full flex items-center justify-center gap-3 py-3.5 border border-white/20 rounded-full hover:bg-white/5 transition-colors text-[14px] font-medium text-white/90" onClick={(e) => e.preventDefault()}>
+            <button type="button" onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-3 py-3.5 border border-white/20 rounded-full hover:bg-white/5 transition-colors text-[14px] font-medium text-white/90">
               <span className="w-4 h-4 rounded-full border-[2px] border-blue-400 border-t-red-400 border-l-yellow-400 border-b-green-400"></span> 
               Continue with Google
             </button>
