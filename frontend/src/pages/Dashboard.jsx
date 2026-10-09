@@ -411,6 +411,23 @@ export default function Dashboard() {
     setToastMessage(null)
   }
 
+  const handleDeleteHistory = (id) => {
+    const updated = chatHistory.filter((c) => c.id !== id)
+    setChatHistory(updated)
+    localStorage.setItem('swarm_chat_history', JSON.stringify(updated))
+    if (activeChatId === id) {
+      handleBackToHome()
+    }
+    triggerToast("Removed chat from history")
+  }
+
+  const handleClearAllHistory = () => {
+    setChatHistory([])
+    localStorage.removeItem('swarm_chat_history')
+    handleBackToHome()
+    triggerToast("Cleared all history")
+  }
+
   const activeAgent = agentsData.find((a) => a.id === selectedAgentId)
 
   return (
@@ -425,6 +442,8 @@ export default function Dashboard() {
           chatHistory={chatHistory}
           activeChatId={activeChatId}
           onSelectHistory={handleSelectHistory}
+          onDeleteHistory={handleDeleteHistory}
+          onClearHistory={handleClearAllHistory}
           onSelectAction={(promptText) => {
             setSidebarCollapsed(true)
             setSidebarOpen(false)
@@ -434,7 +453,7 @@ export default function Dashboard() {
             }
           }}
           onToast={triggerToast}
-            onNewConversation={() => {
+          onNewConversation={() => {
             handleBackToHome()
             setSidebarOpen(false)
             triggerToast("Started a new conversation ✨")

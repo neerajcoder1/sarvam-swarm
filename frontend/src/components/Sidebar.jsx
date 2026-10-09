@@ -9,7 +9,8 @@ import {
   ChevronRight,
   X,
   Smartphone,
-  User
+  User,
+  Trash2
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import SwarmLogo from './SwarmLogo'
@@ -32,7 +33,9 @@ export default function Sidebar({
   onToggleCollapse,
   chatHistory = [],
   activeChatId,
-  onSelectHistory
+  onSelectHistory,
+  onDeleteHistory,
+  onClearHistory
 }) {
   const username = localStorage.getItem('swarm_username') || 'User'
   const firstName = username.split(' ')[0]
@@ -156,23 +159,50 @@ export default function Sidebar({
           <div className="px-2 pt-2 pb-2 flex-1">
             {chatHistory.length > 0 ? (
               <>
-                <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-                  Recent Conversations
-                </p>
+                <div className="flex items-center justify-between px-2 mb-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+                    Recent Conversations
+                  </span>
+                  {onClearHistory && (
+                    <button
+                      type="button"
+                      onClick={onClearHistory}
+                      className="text-[10px] text-[var(--text-muted)] hover:text-red-400 transition-colors cursor-pointer opacity-60 hover:opacity-100"
+                      title="Clear all history"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
                 {chatHistory.map((chat) => (
-                  <button
+                  <div
                     key={chat.id}
-                    type="button"
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-left transition-colors group ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] text-left transition-colors group cursor-pointer ${
                       activeChatId === chat.id
                         ? 'bg-[var(--surface-hover)] text-[var(--text)] font-medium'
                         : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'
                     }`}
                     onClick={() => handleSelectHistory(chat.id, chat.title)}
                   >
-                    <MessageSquare size={13} className="flex-shrink-0 opacity-50" />
-                    <span className="truncate flex-1">{chat.title}</span>
-                  </button>
+                    <div className="flex items-center gap-2.5 truncate flex-1 min-w-0 pr-1">
+                      <MessageSquare size={13} className="flex-shrink-0 opacity-50" />
+                      <span className="truncate">{chat.title}</span>
+                    </div>
+                    {onDeleteHistory && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDeleteHistory(chat.id)
+                        }}
+                        className="opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-400 p-1 rounded transition-all cursor-pointer flex-shrink-0"
+                        title="Remove from history"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
                 ))}
               </>
             ) : (
