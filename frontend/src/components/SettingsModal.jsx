@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Sliders, Volume2, Shield, Sparkles, Check, Trash2, Cpu } from 'lucide-react'
+import { X, Sliders, Volume2, Shield, Sparkles, Check, Trash2, Cpu, Play } from 'lucide-react'
+import { speakText, cancelSpeech } from '../agents/speech'
 
 export default function SettingsModal({ isOpen, onClose, onToast }) {
   const [activeTab, setActiveTab] = useState('general')
+  const [isPlayingTestVoice, setIsPlayingTestVoice] = useState(false)
+  const [availableVoices, setAvailableVoices] = useState([])
+
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('swarm_settings')
     return saved ? JSON.parse(saved) : {
       language: 'hinglish',
+      voiceGender: 'female',
+      systemVoice: '',
       autoPlayVoice: true,
       timeFormat: '12h',
       energyPacing: 'balanced',
@@ -20,6 +26,39 @@ export default function SettingsModal({ isOpen, onClose, onToast }) {
   useEffect(() => {
     localStorage.setItem('swarm_settings', JSON.stringify(settings))
   }, [settings])
+
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      const loadVoices = () => {
+        const vList = window.speechSynthesis.getVoices()
+        setAvailableVoices(vList)
+      }
+      loadVoices()
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices
+      }
+    }
+  }, [])
+
+  const handleTestVoice = () => {
+    cancelSpeech()
+    setIsPlayingTestVoice(true)
+    const sampleText = settings.language === 'hindi'
+      ? "नमस्ते! यह स्वरम असिस्ट एआई वॉइस टेस्ट है।"
+      : "Hello! This is your SwarmAssist AI co-pilot voice test."
+
+    speakText(
+      sampleText,
+      {
+        gender: settings.voiceGender || 'female',
+        voiceName: settings.systemVoice || '',
+        locale: settings.language === 'hindi' ? 'hi-IN' : 'en-IN'
+      },
+      () => setIsPlayingTestVoice(true),
+      () => setIsPlayingTestVoice(false),
+      () => setIsPlayingTestVoice(false)
+    )
+  }
 
   if (!isOpen) return null
 
@@ -148,6 +187,78 @@ export default function SettingsModal({ isOpen, onClose, onToast }) {
 
             {activeTab === 'voice' && (
               <div className="space-y-5">
+                {/* Voice Performer Gender Selection */}
+                <div className="p-4 bg-[#141518] rounded-2xl border border-[#222329] space-y-3">
+                  <div>
+                    <p className="font-medium text-white text-sm">AI Voice Performer</p>
+                    <p className="text-[11px] text-white/40 mt-0.5">Select preferred voice tone and gender for Swarm narrations</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => updateSetting('voiceGender', 'female')}
+                      className={`p-3 rounded-xl border flex items-center justify-between text-xs font-medium transition-all ${
+                        (settings.voiceGender || 'female') === 'female'
+                          ? 'bg-white/10 border-white text-white'
+                          : 'bg-[#09090b] border-[#222329] text-white/50 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Volume2 size={15} className="text-pink-400" />
+                        <span>Female (Natural)</span>
+                      </div>
+                      {(settings.voiceGender || 'female') === 'female' && <Check size={14} className="text-emerald-400" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => updateSetting('voiceGender', 'male')}
+                      className={`p-3 rounded-xl border flex items-center justify-between text-xs font-medium transition-all ${
+                        settings.voiceGender === 'male'
+                          ? 'bg-white/10 border-white text-white'
+                          : 'bg-[#09090b] border-[#222329] text-white/50 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Volume2 size={15} className="text-blue-400" />
+                        <span>Male (Natural)</span>
+                      </div>
+                      {settings.voiceGender === 'male' && <Check size={14} className="text-emerald-400" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Specific Browser System Voice Selector & Test Button */}
+                <div className="p-4 bg-[#141518] rounded-2xl border border-[#222329] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-white text-sm">System Speech Voice Engine</p>
+                      <p className="text-[11px] text-white/40 mt-0.5">Override with specific high-quality browser neural voice</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTestVoice}
+                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors border border-white/10"
+                    >
+                      <Play size={12} className={isPlayingTestVoice ? "animate-pulse text-emerald-400" : "text-white"} />
+                      <span>{isPlayingTestVoice ? "Playing..." : "Test Voice"}</span>
+                    </button>
+                  </div>
+                  <select
+                    value={settings.systemVoice || ''}
+                    onChange={(e) => updateSetting('systemVoice', e.target.value)}
+                    className="w-full bg-[#09090b] border border-[#222329] text-white rounded-xl p-2.5 text-xs outline-none focus:border-white/40"
+                  >
+                    <option value="">Auto-Select Best System Voice (Default)</option>
+                    {availableVoices.map((v, idx) => (
+                      <option key={`${v.name}-${idx}`} value={v.name}>
+                        {v.name} ({v.lang})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Default Language Selector */}
                 <div className="p-4 bg-[#141518] rounded-2xl border border-[#222329] space-y-3">
                   <div>
                     <p className="font-medium text-white text-sm">Default Briefing Language</p>
@@ -167,6 +278,7 @@ export default function SettingsModal({ isOpen, onClose, onToast }) {
                   </select>
                 </div>
 
+                {/* Auto-Play Toggle */}
                 <div className="flex items-center justify-between p-4 bg-[#141518] rounded-2xl border border-[#222329]">
                   <div>
                     <p className="font-medium text-white text-sm">Auto-Play Voice Narration</p>

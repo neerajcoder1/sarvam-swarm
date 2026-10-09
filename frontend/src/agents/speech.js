@@ -78,6 +78,8 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
   const speakingRate = actualSettings?.speaking_rate !== undefined ? actualSettings.speaking_rate : 1.0
   const pitch = actualSettings?.pitch !== undefined ? actualSettings.pitch : 1.0
 
+  const voiceNamePref = actualSettings?.voiceName || actualSettings?.voice_name
+
   console.log('--- TTS Debug Log Start ---')
   console.log('Received voice_settings:', actualSettings)
 
@@ -141,8 +143,14 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
     console.log('Available matching voices:', localeVoices.map(v => v.name))
 
     let selectedVoice = null
-    if (localeVoices.length > 0) {
-      // Prioritize by gender if available
+    
+    // Priority 1: User explicitly selected system voice name
+    if (voiceNamePref && voices.length > 0) {
+      selectedVoice = voices.find(v => v.name === voiceNamePref || v.name.toLowerCase().includes(voiceNamePref.toLowerCase()))
+    }
+
+    // Priority 2: Locale + Gender match
+    if (!selectedVoice && localeVoices.length > 0) {
       const isFemalePref = gender.toLowerCase() === 'female'
       const genderMatches = localeVoices.filter(v => isFemaleVoice(v.name) === isFemalePref)
       if (genderMatches.length > 0) {
@@ -150,8 +158,10 @@ const fallbackToBrowserTTS = (text, actualSettings, actualOnStart, actualOnEnd, 
       } else {
         selectedVoice = localeVoices[0]
       }
-    } else {
-      // Absolute fallback to first available English voice
+    }
+
+    // Priority 3: Fallback English or any voice
+    if (!selectedVoice) {
       const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'))
       if (enVoices.length > 0) {
         selectedVoice = enVoices[0]
@@ -244,3 +254,9 @@ export const createSpeechRecognition = (onResult, onError, onEnd) => {
 
   return recognition
 }
+
+export const getAvailableVoices = () => {
+  if (!('speechSynthesis' in window)) return []
+  return window.speechSynthesis.getVoices()
+}
+

@@ -372,16 +372,35 @@ export default function Dashboard() {
   }
 
   const triggerVoiceSpeech = (textToSpeak = voiceNarrationData, settings = voiceSettings, audio = audioData) => {
+    let finalSettings = settings || {}
+    let effectiveAudio = audio
+
+    try {
+      const savedSettings = JSON.parse(localStorage.getItem('swarm_settings') || '{}')
+      if (savedSettings) {
+        finalSettings = {
+          ...finalSettings,
+          gender: savedSettings.voiceGender || finalSettings.gender || 'female',
+          voiceName: savedSettings.systemVoice || finalSettings.voiceName || finalSettings.voice_name
+        }
+        if (savedSettings.systemVoice) {
+          effectiveAudio = null
+        }
+      }
+    } catch (e) {
+      console.error('Error loading voice settings:', e)
+    }
+
     speakText(
       textToSpeak,
-      settings,
+      finalSettings,
       () => setSpeechActive(true),
       () => setSpeechActive(false),
       (err) => {
         console.error(err)
         setSpeechActive(false)
       },
-      audio
+      effectiveAudio
     )
   }
 
