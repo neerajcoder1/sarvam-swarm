@@ -43,16 +43,45 @@ export default function SettingsModal({ isOpen, onClose, onToast }) {
   const handleTestVoice = () => {
     cancelSpeech()
     setIsPlayingTestVoice(true)
-    const sampleText = settings.language === 'hindi'
-      ? "नमस्ते! यह स्वरम असिस्ट एआई वॉइस टेस्ट है।"
-      : "Hello! This is your SwarmAssist AI co-pilot voice test."
+    
+    const lang = settings.language || 'hinglish'
+    const sampleTexts = {
+      english: "Hello! This is your SwarmAssist AI co-pilot voice test.",
+      hinglish: "Hello! Main aapka SwarmAssist AI voice test narrate kar raha hoon.",
+      hindi: "नमस्ते! यह स्वरम असिस्ट एआई वॉइस टेस्ट है।",
+      tamil: "வணக்கம்! இது உங்கள் SwarmAssist AI குரல் பரிசோதனை.",
+      kannada: "ನಮಸ್ಕಾರ! ಇದು ನಿಮ್ಮ SwarmAssist AI ಧ್ವನಿ ಪರೀಕ್ಷೆ.",
+      telugu: "నమస్కారం! ఇది మీ SwarmAssist AI వాయిస్ టెస్ట్.",
+      malayalam: "നമസ്കാരം! ഇത് നിങ്ങളുടെ SwarmAssist AI വോയ്‌സ് ടെസ്റ്റ് ആണ്.",
+      marathi: "नमस्कार! हे तुमचे SwarmAssist AI व्हॉईस टेस्ट आहे.",
+      gujarati: "નમસ્તે! આ તમારું SwarmAssist AI વૉઇસ ટેસ્ટ છે.",
+      punjabi: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਇਹ ਤੁਹਾਡਾ SwarmAssist AI ਆਵਾਜ਼ ਟੈਸਟ ਹੈ।",
+      bengali: "হ্যালো! এটি আপনার SwarmAssist AI ভয়েস টেস্ট।"
+    }
+
+    const localeMap = {
+      english: 'en-US',
+      hinglish: 'en-IN',
+      hindi: 'hi-IN',
+      tamil: 'ta-IN',
+      kannada: 'kn-IN',
+      telugu: 'te-IN',
+      malayalam: 'ml-IN',
+      marathi: 'mr-IN',
+      gujarati: 'gu-IN',
+      punjabi: 'pa-IN',
+      bengali: 'bn-IN'
+    }
+
+    const sampleText = sampleTexts[lang] || sampleTexts.english
+    const locale = localeMap[lang] || 'en-IN'
 
     speakText(
       sampleText,
       {
         gender: settings.voiceGender || 'female',
         voiceName: settings.systemVoice || '',
-        locale: settings.language === 'hindi' ? 'hi-IN' : 'en-IN'
+        locale: locale
       },
       () => setIsPlayingTestVoice(true),
       () => setIsPlayingTestVoice(false),
@@ -273,7 +302,12 @@ export default function SettingsModal({ isOpen, onClose, onToast }) {
                     <option value="hinglish">Hinglish (Colloquial)</option>
                     <option value="hindi">Hindi (हिंदी)</option>
                     <option value="tamil">Tamil (தமிழ்)</option>
+                    <option value="kannada">Kannada (ಕನ್ನಡ)</option>
                     <option value="telugu">Telugu (తెలుగు)</option>
+                    <option value="malayalam">Malayalam (മലയാളം)</option>
+                    <option value="marathi">Marathi (मराठी)</option>
+                    <option value="gujarati">Gujarati (ગુજરાતી)</option>
+                    <option value="punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
                     <option value="bengali">Bengali (বাংলা)</option>
                   </select>
                 </div>

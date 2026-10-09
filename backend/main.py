@@ -405,6 +405,7 @@ DEFAULT_MOCK_RESPONSE = {
 # ==========================================
 class SwarmRequest(BaseModel):
     query: str = Field(..., description="The user query to be processed by the swarm.")
+    target_language: Optional[str] = Field(None, description="Optional target language for voice narration and tasks.")
 
 class TTSRequest(BaseModel):
     text: str = Field(..., description="The text to convert to speech.")
@@ -908,12 +909,18 @@ def get_fallback_response(query: str) -> dict:
 async def process_swarm_query(request: SwarmRequest):
     req_start = time.perf_counter()
     query = request.query.strip()
-    logger.info(f"Incoming query: {query}")
+    target_lang = request.target_language.strip().lower() if request.target_language else None
+    logger.info(f"Incoming query: {query}, target_language: {target_lang}")
     
     if not query:
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
         
     logger.info("Generation started")
+
+    if target_lang:
+        query_contents = f"{query}\n[User Preferred Audio Language: {target_lang}. Please generate the 'voice_narration' and tasks naturally in {target_lang}.]"
+    else:
+        query_contents = query
     
     raw_content_1 = ""
     try:
@@ -921,7 +928,7 @@ async def process_swarm_query(request: SwarmRequest):
         inf_start = time.perf_counter()
         response = client.models.generate_content(
             model="gemini-flash-lite-latest",
-            contents=query,
+            contents=query_contents,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 response_mime_type="application/json"

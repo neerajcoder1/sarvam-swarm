@@ -19,6 +19,10 @@ export const runSwarmOrchestration = async (
     voice_narration: VOICE_NARRATION
   }
 
+  // Retrieve target language preference from localStorage
+  const savedSettings = JSON.parse(localStorage.getItem('swarm_settings') || '{}')
+  const userLang = savedSettings.language || 'hinglish'
+
   // Fetch plan updates from backend
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/swarm`, {
@@ -26,7 +30,7 @@ export const runSwarmOrchestration = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query: queryText }),
+      body: JSON.stringify({ query: queryText, target_language: userLang }),
     })
 
     if (response.ok) {
@@ -41,7 +45,7 @@ export const runSwarmOrchestration = async (
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             text: parsed.voice_narration,
-            language: parsed.detected_language?.language || "english"
+            language: userLang || parsed.detected_language?.language || "english"
           })
         }).then(res => res.json()).then(data => data.audio_base64).catch(err => {
           console.error("TTS fetch failed", err)
