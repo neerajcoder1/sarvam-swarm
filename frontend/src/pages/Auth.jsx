@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ArrowRight } from 'lucide-react'
+import { ChevronDown, Mail, Key, Sparkles } from 'lucide-react'
 import SwarmLogo from '../components/SwarmLogo'
 import LegalModal from '../components/LegalModal'
 import { supabase } from '../lib/supabase'
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
+  const [useOtpMode, setUseOtpMode] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
   const [workspace, setWorkspace] = useState('Swarm Lite')
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false)
   const [formData, setFormData] = useState({ username: '', email: '', password: '' })
@@ -37,9 +40,72 @@ export default function Auth() {
   const handleToggle = () => {
     setIsLogin(!isLogin)
     setError('')
+    setOtpSent(false)
+  }
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault()
+    if (!formData.email) {
+      setError('Please enter your email address')
+      return
+    }
+    setError('')
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: {
+          shouldCreateUser: true
+        }
+      })
+      if (error) throw error
+      setOtpSent(true)
+      setError('✨ Check your email inbox for the 6-digit magic code!')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    if (!otpCode) {
+      setError('Please enter the 6-digit OTP code')
+      return
+    }
+    setError('')
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: formData.email,
+        token: otpCode,
+        type: 'email'
+      })
+      if (error) throw error
+      if (data?.session) {
+        localStorage.setItem('swarm_token', data.session.access_token)
+        localStorage.setItem('swarm_email', data.session.user.email)
+        const name = data.session.user.user_metadata?.full_name || data.session.user.email.split('@')[0]
+        localStorage.setItem('swarm_username', name)
+        navigate('/')
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid or expired OTP code')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async (e) => {
+    if (useOtpMode) {
+      if (otpSent) {
+        return handleVerifyOtp(e)
+      } else {
+        return handleSendOtp(e)
+      }
+    }
+
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -149,16 +215,35 @@ export default function Auth() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-3xl font-semibold tracking-tight mb-4 text-center">
-            {isLogin ? 'Sign in to Swarm' : 'Create your account'}
+            {useOtpMode ? 'Passwordless Sign in' : (isLogin ? 'Sign in to Swarm' : 'Create your account')}
           </h1>
 
-          <p className="text-[11px] text-white/40 text-center mb-8 max-w-[300px] leading-relaxed">
+          <p className="text-[11px] text-white/40 text-center mb-6 max-w-[300px] leading-relaxed">
             By continuing, you agree to Swarm's <span onClick={() => setLegalConfig({isOpen: true, type: 'terms'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Terms of Service</span>, <span onClick={() => setLegalConfig({isOpen: true, type: 'privacy'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Privacy Policy</span>, and <span onClick={() => setLegalConfig({isOpen: true, type: 'cookies'})} className="underline cursor-pointer hover:text-white/60 transition-colors">Cookie Policy</span>.
           </p>
 
+          {/* Mode Switcher */}
+          <div className="flex items-center gap-2 mb-6 p-1 bg-white/5 border border-white/10 rounded-full w-full">
+            <button
+              type="button"
+              onClick={() => { setUseOtpMode(false); setError(''); setOtpSent(false) }}
+              className={`flex-1 py-1.5 text-xs font-medium rounded-full transition-all ${!useOtpMode ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'}`}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUseOtpMode(true); setError(''); setOtpSent(false) }}
+              className={`flex-1 py-1.5 text-xs font-medium rounded-full transition-all flex items-center justify-center gap-1 ${useOtpMode ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'}`}
+            >
+              <Sparkles size={12} />
+              <span>Email OTP</span>
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="w-full flex flex-col">
             <AnimatePresence>
-              {!isLogin && (
+              {!isLogin && !useOtpMode && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -172,7 +257,7 @@ export default function Auth() {
                     className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
                     value={formData.username}
                     onChange={(e) => setFormData({...formData, username: e.target.value})}
-                    required={!isLogin}
+                    required={!isLogin && !useOtpMode}
                   />
                 </motion.div>
               )}
@@ -185,19 +270,40 @@ export default function Auth() {
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
               required
+              disabled={useOtpMode && otpSent}
             />
 
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
-              value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              required
-            />
+            {!useOtpMode && (
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full mb-3 px-5 py-3.5 bg-transparent border border-white/20 rounded-full focus:outline-none focus:border-white/60 transition-colors text-white placeholder:text-white/30 text-sm"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                required={!useOtpMode}
+              />
+            )}
+
+            {useOtpMode && otpSent && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full"
+              >
+                <input
+                  type="text"
+                  placeholder="Enter 6-digit OTP code"
+                  maxLength={6}
+                  className="w-full mb-3 px-5 py-3.5 bg-transparent border border-orange-500/50 rounded-full text-center tracking-widest text-lg font-mono focus:outline-none focus:border-orange-400 transition-colors text-white placeholder:text-white/30"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  required
+                />
+              </motion.div>
+            )}
 
             {error && (
-              <p className={`text-xs mt-1 text-center ${error.includes('successful') ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-xs mt-1 text-center ${error.includes('✨') || error.includes('successful') ? 'text-emerald-400 font-medium' : 'text-red-400'}`}>
                 {error}
               </p>
             )}
@@ -207,7 +313,11 @@ export default function Auth() {
               disabled={loading}
               className="w-full mt-4 py-3.5 bg-white text-black font-semibold rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 text-[15px]"
             >
-              {loading ? 'Please wait...' : (isLogin ? 'Sign in with Email' : 'Sign up with Email')}
+              {loading 
+                ? 'Please wait...' 
+                : useOtpMode 
+                  ? (otpSent ? 'Verify OTP Code & Sign In' : 'Send 6-Digit Magic Code') 
+                  : (isLogin ? 'Sign in with Email' : 'Sign up with Email')}
             </button>
           </form>
 
@@ -223,12 +333,14 @@ export default function Auth() {
             </button>
           </div>
 
-          <button 
-            onClick={handleToggle}
-            className="text-[13px] text-white/50 hover:text-white transition-colors"
-          >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
+          {!useOtpMode && (
+            <button 
+              onClick={handleToggle}
+              className="text-[13px] text-white/50 hover:text-white transition-colors"
+            >
+              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </button>
+          )}
         </motion.div>
       </div>
       <LegalModal 
