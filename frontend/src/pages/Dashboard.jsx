@@ -14,11 +14,26 @@ import { SWARM_AGENTS, DAY_PLAN_TASKS, VOICE_NARRATION } from '../data/agents'
 import { speakText, cancelSpeech, createSpeechRecognition } from '../agents/speech'
 import { runSwarmOrchestration } from '../agents/orchestrator'
 const QUICK_SUGGESTIONS = [
-  "⚡ Executive Brain Dump",
-  "Plan my day",
-  "What's my schedule today?",
-  "Suggest a healthy lunch near me",
-  "Add 30 min break"
+  {
+    label: "⚡ Executive Brain Dump",
+    prompt: "Brain dump for today: I have an urgent client presentation at 3 PM, need 30 min slide review beforehand, pick up groceries, and call team lead at 6 PM."
+  },
+  {
+    label: "Plan my day",
+    prompt: "Plan my day with prioritized work tasks, hydration breaks, and an energy routine."
+  },
+  {
+    label: "What's my schedule today?",
+    prompt: "What's my schedule today? Sequence my tasks and wellness breaks."
+  },
+  {
+    label: "Suggest a healthy lunch near me",
+    prompt: "Suggest a healthy lunch break and sequence it into my afternoon schedule."
+  },
+  {
+    label: "Add 30 min break",
+    prompt: "Add a 30-minute relaxation and hydration break to my afternoon schedule."
+  }
 ]
 
 const DYNAMIC_PLACEHOLDERS = [
@@ -562,17 +577,17 @@ export default function Dashboard() {
                 {/* Quick Suggestions Pills */}
                 <div className="w-full max-w-2xl mx-auto pt-2 sm:pt-4 pb-1">
                   <div className="flex items-center justify-center gap-2 flex-wrap">
-                    {QUICK_SUGGESTIONS.map((suggestion) => (
+                    {QUICK_SUGGESTIONS.map((item) => (
                       <button
-                        key={suggestion}
+                        key={item.label}
                         type="button"
                         className="px-3.5 py-1.5 rounded-full bg-[#18181b] border border-[#27272a] text-xs font-medium text-[#a1a1aa] hover:text-white hover:border-[#3f3f46] hover:bg-[#27272a] transition-all whitespace-nowrap cursor-pointer"
                         onClick={() => {
-                          setInput(suggestion)
-                          handleStartSwarm(suggestion)
+                          setInput(item.prompt)
+                          handleStartSwarm(item.prompt)
                         }}
                       >
-                        {suggestion}
+                        {item.label}
                       </button>
                     ))}
                   </div>
