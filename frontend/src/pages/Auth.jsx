@@ -16,6 +16,24 @@ export default function Auth() {
   const [legalConfig, setLegalConfig] = useState({ isOpen: false, type: 'terms' })
   const navigate = useNavigate()
 
+  React.useEffect(() => {
+    if (localStorage.getItem('swarm_token')) {
+      navigate('/', { replace: true })
+      return
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        localStorage.setItem('swarm_token', session.access_token)
+        localStorage.setItem('swarm_email', session.user.email || 'user@example.com')
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
+        localStorage.setItem('swarm_username', name)
+        navigate('/', { replace: true })
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [navigate])
+
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true)

@@ -13,23 +13,43 @@ import { supabase } from './lib/supabase'
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 const PING_INTERVAL_MS = 3000
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, authInitializing }) => {
   const token = localStorage.getItem('swarm_token')
+  if (authInitializing) {
+    return null // Allow Supabase to parse OAuth callback tokens before redirecting
+  }
   if (!token) return <Navigate to="/auth" replace />
   return children
 }
 
 export default function App() {
   const [backendReady, setBackendReady] = useState(false)
+  const [authInitializing, setAuthInitializing] = useState(true)
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Check initial Supabase session on app mount (crucial for Google OAuth redirect)
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session && session.user) {
         localStorage.setItem('swarm_token', session.access_token)
         localStorage.setItem('swarm_email', session.user.email || 'user@example.com')
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
         localStorage.setItem('swarm_username', name)
       }
+      setAuthInitializing(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        localStorage.setItem('swarm_token', session.access_token)
+        localStorage.setItem('swarm_email', session.user.email || 'user@example.com')
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
+        localStorage.setItem('swarm_username', name)
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('swarm_token')
+        localStorage.removeItem('swarm_email')
+        localStorage.removeItem('swarm_username')
+      }
+      setAuthInitializing(false)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -84,17 +104,17 @@ export default function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={
-            <ProtectedRoute>
+            <ProtectedRoute authInitializing={authInitializing}>
               <Dashboard />
             </ProtectedRoute>
           } />
           <Route path="/about" element={
-            <ProtectedRoute>
+            <ProtectedRoute authInitializing={authInitializing}>
               <About />
             </ProtectedRoute>
           } />
           <Route path="/upgrade" element={
-            <ProtectedRoute>
+            <ProtectedRoute authInitializing={authInitializing}>
               <Upgrade />
             </ProtectedRoute>
           } />
