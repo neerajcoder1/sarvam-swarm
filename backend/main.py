@@ -622,7 +622,7 @@ def infer_language_from_text(text: str) -> str:
         
     return "english"
 
-def repair_and_build_response(data: dict) -> dict:
+def repair_and_build_response(data: dict, target_lang: str = None) -> dict:
     """Repairs partial responses and constructs the final SwarmResponse structure.
     Saves token generation overhead by populating static agent profiles in python.
     """
@@ -637,13 +637,13 @@ def repair_and_build_response(data: dict) -> dict:
         voice_narration = default_ref["voice_narration"]
         
     # 2. Resolve language detection
-    raw_lang = data.get("language")
+    raw_lang = target_lang or data.get("language")
     if not raw_lang and isinstance(data.get("voice_settings"), dict):
         raw_lang = data["voice_settings"].get("language")
     if not raw_lang:
         raw_lang = data.get("detected_language")
         
-    source = "llm"
+    source = "user_preference" if target_lang else "llm"
     confidence = data.get("language_confidence")
     if confidence is not None:
         try:
@@ -792,7 +792,7 @@ def repair_and_build_response(data: dict) -> dict:
         "detected_language": detected_language_dict
     }
 
-def verbose_validate_and_repair(raw_content: str, attempt_num: int) -> dict:
+def verbose_validate_and_repair(raw_content: str, attempt_num: int, target_lang: str = None) -> dict:
     """Logs raw output, parses it, records JSON parse and validation durations, and repairs the schema.
     """
     logger.info(f"--- [Attempt {attempt_num}] Validation & Parsing Trace ---")
@@ -816,19 +816,19 @@ def verbose_validate_and_repair(raw_content: str, attempt_num: int) -> dict:
         
     # Repair and build response
     val_start = time.perf_counter()
-    repaired = repair_and_build_response(data)
+    repaired = repair_and_build_response(data, target_lang=target_lang)
     val_time = (time.perf_counter() - val_start) * 1000
     logger.info(f"Validation & Repair time: {val_time:.2f} ms")
     
     return repaired
 
-def get_fallback_response(query: str) -> dict:
+def get_fallback_response(query: str, target_lang: str = None) -> dict:
     """Dynamic configuration-driven fallback system supporting custom query keywords."""
     fallback = copy.deepcopy(DEFAULT_MOCK_RESPONSE)
     lower_query = query.lower()
     
     # Inferred language and config lookup
-    detected_lang = infer_language_from_text(query)
+    detected_lang = target_lang if target_lang else infer_language_from_text(query)
     normalized_lang = normalize_language(detected_lang)
     config = LANGUAGE_CONFIGS.get(normalized_lang, LANGUAGE_CONFIGS["english"])
     
@@ -918,7 +918,12 @@ async def process_swarm_query(request: SwarmRequest):
     logger.info("Generation started")
 
     if target_lang:
-        query_contents = f"{query}\n[User Preferred Audio Language: {target_lang}. Please generate the 'voice_narration' and tasks naturally in {target_lang}.]"
+        query_contents = (
+            f"{query}\n\n"
+            f"[SYSTEM DIRECTIVE: The user's preferred language is '{target_lang}'. "
+            f"You MUST generate all task titles, task descriptions, agent traces, and 'voice_narration' "
+            f"natively and naturally in {target_lang}. Set 'language' field to '{target_lang}'.]"
+        )
     else:
         query_contents = query
     
@@ -950,7 +955,7 @@ async def process_swarm_query(request: SwarmRequest):
             if total_tokens is not None:
                 logger.info(f"Total tokens: {total_tokens}")
             
-        repaired_json = verbose_validate_and_repair(raw_content_1, attempt_num=1)
+        repaired_json = verbose_validate_and_repair(raw_content_1, attempt_num=1, target_lang=target_lang)
         
         if repaired_json:
             total_time = (time.perf_counter() - req_start) * 1000
@@ -969,10 +974,10 @@ async def process_swarm_query(request: SwarmRequest):
         logger.warning("Retry")
         
         # Determine language detected in the first turn to preserve it in retry
-        first_lang = "english"
+        first_lang = target_lang or "english"
         try:
             parsed_first = json.loads(clean_json_string(raw_content_1))
-            first_lang = parsed_first.get("language") or parsed_first.get("detected_language", {}).get("language")
+            first_lang = target_lang or parsed_first.get("language") or parsed_first.get("detected_language", {}).get("language")
         except Exception:
             pass
         if not first_lang:
@@ -985,7 +990,7 @@ async def process_swarm_query(request: SwarmRequest):
         inf_start_retry = time.perf_counter()
         retry_response = client.models.generate_content(
             model="gemini-flash-lite-latest",
-            contents=[query, dynamic_retry_prompt],
+            contents=[query_contents, dynamic_retry_prompt],
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 response_mime_type="application/json"
@@ -1007,7 +1012,7 @@ async def process_swarm_query(request: SwarmRequest):
             if total_tokens is not None:
                 logger.info(f"Total tokens (retry): {total_tokens}")
             
-        repaired_json_retry = verbose_validate_and_repair(raw_content_2, attempt_num=2)
+        repaired_json_retry = verbose_validate_and_repair(raw_content_2, attempt_num=2, target_lang=target_lang)
         
         if repaired_json_retry:
             total_time = (time.perf_counter() - req_start) * 1000
@@ -1030,7 +1035,7 @@ async def process_swarm_query(request: SwarmRequest):
         logger.warning("Fallback used: Exception raised during Gemini API request execution.")
         
     total_time = (time.perf_counter() - req_start) * 1000
-    fallback_res = get_fallback_response(query)
+    fallback_res = get_fallback_response(query, target_lang=target_lang)
     logger.info(f"Incoming query: {query}")
     logger.info(f"Detected language: {fallback_res['detected_language']['language']}")
     logger.info(f"Normalized language: {fallback_res['detected_language']['language']}")
