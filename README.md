@@ -2,7 +2,8 @@
 
   <img src="logo.png" alt="SwarmAssist Logo" width="160" height="160" />
 
-  # 🤖 SwarmAssist
+  # <img width="959" height="437" alt="image" src="https://github.com/user-attachments/assets/21d44da4-7e9f-465e-a519-ac80a840bc3d" />
+ SwarmAssist
   ### **AI-Powered Multi-Agent Productivity & Bio-Wellness Engine**
 
   *Transforming chaotic schedules into intelligent, energy-aware, and explainable execution plans.*
@@ -360,11 +361,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 | 📊 Interactive Dashboard | 🤖 Agent Trace Drawer |
 |:-------------------------:|:---------------------:|
-| ![Dashboard](content.png) | *(Live reasoning view)* |
-
-| 📅 Time-Blocked Schedule | 🎤 Multilingual Voice Briefing |
-|:-------------------------:|:------------------------------:|
-| *(Schedule Timeline)*     | *(Web Speech Audio Synthesis)*  |
+| <img width="959" height="437" alt="image" src="https://github.com/user-attachments/assets/02cf4559-6898-40a8-9a0a-26ea317af3e6" /> | *(Live reasoning view)* |
 
 </div>
 
