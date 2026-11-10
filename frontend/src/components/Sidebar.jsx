@@ -58,6 +58,7 @@ export default function Sidebar({
   const rawUsername = localStorage.getItem('swarm_username') || localStorage.getItem('swarm_email') || 'User'
   const username = formatUserDisplayName(rawUsername)
   const firstName = username.split(' ')[0]
+  const isDemoMode = localStorage.getItem('swarm_demo_mode') === 'true'
   const navigate = useNavigate()
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
 
@@ -235,6 +236,18 @@ export default function Sidebar({
 
         {/* ── Bottom: Mobile App + Profile ── */}
         <div className="px-2 pb-3 pt-1 border-t border-[var(--line)] flex flex-col gap-0.5">
+
+          {/* Demo Mode Banner */}
+          {isDemoMode && (
+            <div className="mx-1 mb-2 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex flex-col gap-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+                ✦ Demo Mode
+              </span>
+              <span className="text-[10px] text-white/35 leading-tight">
+                Viewing mock AI swarm workflow. No real data.
+              </span>
+            </div>
+          )}
           <button
             type="button"
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] transition-colors"

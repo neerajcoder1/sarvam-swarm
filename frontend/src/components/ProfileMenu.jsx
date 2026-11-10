@@ -25,6 +25,7 @@ export default function ProfileMenu({ userEmail, firstName, onOpenSettings }) {
     localStorage.removeItem('swarm_token')
     localStorage.removeItem('swarm_email')
     localStorage.removeItem('swarm_username')
+    localStorage.removeItem('swarm_demo_mode')
     try {
       await supabase.auth.signOut()
     } catch (err) {

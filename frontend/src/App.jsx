@@ -15,7 +15,8 @@ const PING_INTERVAL_MS = 3000
 
 const ProtectedRoute = ({ children, authInitializing }) => {
   const token = localStorage.getItem('swarm_token')
-  if (authInitializing) {
+  const isDemoMode = localStorage.getItem('swarm_demo_mode') === 'true'
+  if (authInitializing && !isDemoMode) {
     return null // Allow Supabase to parse OAuth callback tokens before redirecting
   }
   if (!token) return <Navigate to="/auth" replace />

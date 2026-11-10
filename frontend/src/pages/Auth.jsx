@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, Loader2 } from 'lucide-react'
+import { ChevronDown, Loader2, Sparkles } from 'lucide-react'
 import SwarmLogo from '../components/SwarmLogo'
 import LegalModal from '../components/LegalModal'
 import { supabase } from '../lib/supabase'
@@ -33,6 +33,15 @@ export default function Auth() {
     })
     return () => subscription.unsubscribe()
   }, [navigate])
+
+  const handleDemoLogin = () => {
+    // Inject mock portfolio-demo credentials — no real auth required
+    localStorage.setItem('swarm_token', 'demo_portfolio_token')
+    localStorage.setItem('swarm_email', 'demo@swarmassist.ai')
+    localStorage.setItem('swarm_username', 'Demo User')
+    localStorage.setItem('swarm_demo_mode', 'true')
+    navigate('/', { replace: true })
+  }
 
   const handleGoogleSignIn = async () => {
     try {
@@ -266,10 +275,28 @@ export default function Auth() {
             <span>Continue with Google</span>
           </button>
 
+          {/* Demo / Portfolio CTA */}
+          <div className="w-full mt-5 pt-5 border-t border-[#1e1f24]">
+            <p className="text-[10px] text-white/30 text-center mb-3 uppercase tracking-widest font-mono">
+              Portfolio Preview
+            </p>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              className="w-full flex items-center justify-center gap-2.5 py-3 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-indigo-500/40 hover:border-indigo-400/70 hover:from-indigo-600/30 hover:to-purple-600/30 rounded-2xl transition-all text-xs font-semibold text-indigo-300 hover:text-indigo-200 group"
+            >
+              <Sparkles size={14} className="group-hover:scale-110 transition-transform" />
+              <span>Try Demo — No Login Required</span>
+            </button>
+            <p className="text-[10px] text-white/20 text-center mt-2">
+              Explore the full AI swarm workflow with mock data
+            </p>
+          </div>
+
           {/* Toggle Mode */}
           <button 
             onClick={handleToggle}
-            className="mt-6 text-xs text-white/40 hover:text-white transition-colors font-medium"
+            className="mt-5 text-xs text-white/40 hover:text-white transition-colors font-medium"
           >
             {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
